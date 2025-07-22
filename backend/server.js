@@ -3,6 +3,7 @@ require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const { Pool } = require('pg'); // Import Pool from 'pg'
 const bcrypt = require('bcrypt'); // Import bcrypt
+const jwt = require('jsonwebtoken'); // Import jsonwebtoken
 const app = express();
 const port = 3001;
 
@@ -25,6 +26,9 @@ pool.query('SELECT NOW()', (err, res) => {
     console.log('Successfully connected to PostgreSQL database at:', res.rows[0].now);
   }
 });
+
+// Define a JWT secret
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey'; // Fallback for dev if .env not set, but prefer .env
 
 // User Registration Route
 app.post('/api/auth/register', async (req, res) => {
@@ -65,7 +69,55 @@ app.post('/api/auth/register', async (req, res) => {
       console.error('Error during user registration:', error.message);
       res.status(500).json({ message: 'Server error during registration.' });
     }
-  }); 
+  });
+  
+// User Login Route
+app.post('/api/auth/login', async (req, res) => {
+    const { email, username , password } = req.body;
+  
+    if (!email && !username || !password ) {
+      return res.status(400).json({ message: 'Email or username and password are required.' });
+    }
+  
+    try {
+      // 1. Find the user by email or username
+      const userResult = await pool.query('SELECT * FROM users WHERE email = $1 OR username = $2', [email,username]);
+      const user = userResult.rows[0];
+  
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials.' }); // Use generic message for security
+      }
+  
+      // 2. Compare the provided password with the stored hashed password
+      const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+  
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Invalid credentials.' });
+      }
+  
+      // 3. Generate a JWT
+      // The payload should contain minimal, non-sensitive user data (e.g., user ID, username, email)
+      const token = jwt.sign(
+        { id: user.id, username: user.username, email: user.email },
+        JWT_SECRET,
+        { expiresIn: '1h' } // Token expires in 1 hour
+      );
+  
+      res.status(200).json({
+        message: 'Logged in successfully!',
+        token: token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email
+        }
+      });
+  
+    } catch (error) {
+      console.error('Error during user login:', error.message);
+      res.status(500).json({ message: 'Server error during login.' });
+    }
+  });
 
 app.get('/', (req, res) => {
   res.send('Hello from Roomloop Backend!');
