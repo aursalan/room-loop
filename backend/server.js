@@ -17,6 +17,7 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
 });
+// ------------------------------------------
 
 // Test the database connection on server startup
 pool.query('SELECT NOW()', (err, res) => {
@@ -26,6 +27,7 @@ pool.query('SELECT NOW()', (err, res) => {
     console.log('Successfully connected to PostgreSQL database at:', res.rows[0].now);
   }
 });
+// ------------------------------------------
 
 // Define a JWT secret
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -97,6 +99,7 @@ app.post('/api/auth/register', async (req, res) => {
       res.status(500).json({ message: 'Server error during registration.' });
     }
   });
+// ------------------------------------------
   
 // User Login Route
 app.post('/api/auth/login', async (req, res) => {
@@ -145,6 +148,7 @@ app.post('/api/auth/login', async (req, res) => {
       res.status(500).json({ message: 'Server error during login.' });
     }
   });
+// ------------------------------------------
 
 // User Profile API (Protected)
 app.get('/api/users/me', authenticateToken, async (req, res) => {
@@ -173,11 +177,14 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Server error while fetching profile.' });
   }
 });
+// ------------------------------------------
 
-app.get('/', (req, res) => {
+// Root API
+app.get('/api', (req, res) => {
   res.send('Hello from Roomloop Backend!');
 });
 
 app.listen(port, () => {
   console.log(`Roomloop backend listening at http://localhost:${port}`);
 });
+// ------------------------------------------
