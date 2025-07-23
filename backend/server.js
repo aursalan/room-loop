@@ -146,6 +146,34 @@ app.post('/api/auth/login', async (req, res) => {
     }
   });
 
+// User Profile API (Protected)
+app.get('/api/users/me', authenticateToken, async (req, res) => {
+  try {
+    // req.user is populated by the authenticateToken middleware
+    const userId = req.user.id;
+
+    // Fetch user from the database using the ID from the token
+    const userResult = await pool.query(
+      'SELECT id, email, username, created_at FROM users WHERE id = $1',
+      [userId]
+    );
+
+    const user = userResult.rows[0];
+
+    if (!user) {
+      // This case should ideally not happen if JWT verification works,
+      // but it's good for robustness if a user was deleted after token issue.
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    res.status(200).json({ user });
+
+  } catch (error) {
+    console.error('Error fetching user profile:', error.message);
+    res.status(500).json({ message: 'Server error while fetching profile.' });
+  }
+});
+
 app.get('/', (req, res) => {
   res.send('Hello from Roomloop Backend!');
 });
