@@ -28,7 +28,34 @@ pool.query('SELECT NOW()', (err, res) => {
 });
 
 // Define a JWT secret
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey'; // Fallback for dev if .env not set, but prefer .env
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// JWT Validation Middleware 
+function authenticateToken(req, res, next) {
+  // Get the token from the Authorization header
+  // Expected format: "Authorization: Bearer <TOKEN>"
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Extract the token part after "Bearer "
+
+  if (token == null) {
+    // No token provided at all
+    return res.status(401).json({ message: 'Authentication token required.' });
+  }
+
+  // Verify the token using your JWT_SECRET
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      // Token is invalid (e.g., signature mismatch, malformed) or expired
+      console.error('JWT verification error:', err.message); // Log the specific error for debugging
+      return res.status(403).json({ message: 'Invalid or expired token.' });
+    }
+    // If the token is valid, attach the decoded user payload to the request object
+    // This 'user' object contains { id, username, email } that you put in the token during login
+    req.user = user;
+    next(); // Proceed to the next middleware or route handler (the actual API endpoint)
+  });
+}
+// ------------------------------------------
 
 // User Registration Route
 app.post('/api/auth/register', async (req, res) => {
