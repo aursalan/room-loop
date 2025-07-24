@@ -10,6 +10,8 @@ import RegistrationForm from './components/Auth/RegistrationForm';
 // --- Import dashboard ---
 import Dashboard from './pages/Dashboard'; 
 
+import RoomPage from './pages/RoomPage'; // --- Import RoomPage
+
 // --- ProtectedRoute Component ---
 function ProtectedRoute({ children }) {
   const { isLoggedIn } = useAuth();
@@ -50,6 +52,8 @@ function App() {
           {/* Default path '/' can be either login (if not logged in) or dashboard (if logged in) */}
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /> {/* Protecting root path */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /> {/* Explicit dashboard path */}
+
+          <Route path="/room/:accessCode" element={<ProtectedRoute><RoomPage /></ProtectedRoute>} />
 
           {/* Catch-all for 404 (optional but good practice) */}
           <Route path="*" element={<h2 style={{textAlign: 'center'}}>404 - Page Not Found</h2>} />
