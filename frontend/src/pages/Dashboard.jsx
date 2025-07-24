@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'; // Import useState and useEffect
 import { useAuth } from '../context/AuthContext';
-import RoomCreationForm from '../components/room/RoomCreationForm'; // --- Import RoomCreationForm
+import RoomCreationForm from '../components/room/RoomCreationForm'; // Import RoomCreationForm
+import JoinRoomForm from '../components/Room/JoinRoomForm'; // --- Import JoinRoomForm
 
 function Dashboard() {
   const { user, logout, token } = useAuth(); // Also get token to send with API call
@@ -82,6 +83,8 @@ function Dashboard() {
       <button onClick={handleLogout} style={{ padding: '10px 15px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}>Logout</button>
 
       <RoomCreationForm />
+
+      <JoinRoomForm/>
 
     </div>
   );
