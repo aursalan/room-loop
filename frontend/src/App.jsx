@@ -7,18 +7,8 @@ import './App.css';
 import LoginForm from './components/Auth/LoginForm';
 import RegistrationForm from './components/Auth/RegistrationForm';
 
-// --- Temporary Dashboard Component (will be replaced later) ---
-function Dashboard() {
-  const { user, logout } = useAuth();
-  return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h2>Welcome to your Dashboard, {user?.username}!</h2>
-      <p>This is a protected page. You can only see this when logged in.</p>
-      <button onClick={logout} style={{ padding: '10px 15px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}>Logout</button>
-    </div>
-  );
-}
-// --------------------------------------------------------------------
+// --- Import dashboard ---
+import Dashboard from './pages/Dashboard'; 
 
 // --- ProtectedRoute Component ---
 function ProtectedRoute({ children }) {
