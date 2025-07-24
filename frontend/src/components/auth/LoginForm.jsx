@@ -1,6 +1,5 @@
-// frontend/src/components/Auth/LoginForm.jsx
-
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
 
 // Helper function to validate email format (basic regex)
 const isValidEmail = (input) => {
@@ -12,6 +11,8 @@ function LoginForm() {
   const [emailOrUsername, setEmailOrUsername] = useState(''); // Unified state for input
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+
+  const {login} = useAuth(); // Get login function from context
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,8 +39,7 @@ function LoginForm() {
 
       if (response.ok) {
         setMessage('Login successful! Redirecting...');
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        login(data.token, data.user); // Call login function from context
         setEmailOrUsername(''); // Clear input on success
         setPassword('');
         console.log('Login Success:', data);

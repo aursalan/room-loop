@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
 
 function RegistrationForm() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState(''); // To display success/error messages
+
+  const {login} =useAuth(); // Get login function from context
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission behavior
@@ -23,7 +26,8 @@ function RegistrationForm() {
       const data = await response.json(); // Parse the JSON response
 
       if (response.ok) { // Check if the response status is 2xx
-        setMessage(`Registration successful! Welcome, ${data.user.username}`);
+        setMessage(`Registration successful! Welcome, ${data.user.username}. Logging in...`);
+        login(data.token, data.user); // Call login function from context
         setEmail('');
         setUsername('');
         setPassword('');
