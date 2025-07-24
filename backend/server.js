@@ -207,6 +207,9 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   if (type !== 'public' && type !== 'private') {
     return res.status(400).json({ message: 'Room type must be "public" or "private".' });
   }
+  if (new Date(startTime) < new Date()) {
+    return res.status(400).json({ message: 'Start time cannot be in the past.' });
+  }
   if (new Date(startTime) >= new Date(endTime)) {
     return res.status(400).json({ message: 'End time must be after start time.' });
   }
