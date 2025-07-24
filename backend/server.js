@@ -313,7 +313,83 @@ io.on('connection', (socket) => {
 
   // You'll add more real-time logic here later
 });
-// ----------------------------------------------------
+// ------------------------------------------
+
+// --- Join Room API (via access code) ---
+app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
+  const { accessCode } = req.params; // Get accessCode from URL parameters
+  const userId = req.user.id; // Get userId from authenticated user
+
+  // Basic validation: accessCode must be provided in URL
+  if (!accessCode) {
+    return res.status(400).json({ message: 'Access code is required in the URL.' });
+  }
+
+  try {
+    // 1. Find the room by access code and get details including current active participants
+    const roomResult = await pool.query(
+      `SELECT id, host_id, name, type, status, max_participants, access_code,
+              (SELECT COUNT(*) FROM room_participants WHERE room_id = rooms.id AND left_at IS NULL) as current_active_participants
+       FROM rooms
+       WHERE access_code = $1`,
+      [accessCode]
+    );
+
+    const room = roomResult.rows[0];
+
+    // If room not found
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found with this access code.' });
+    }
+
+    // 2. Check Room Status: Must be 'live' to join
+    if (room.status !== 'live') {
+      return res.status(403).json({ message: `Cannot join room. Room is ${room.status}.` });
+    }
+
+    // 3. Check if max participants reached (if defined)
+    const currentParticipantCount = parseInt(room.current_active_participants, 10);
+    if (room.max_participants && currentParticipantCount >= room.max_participants) {
+      return res.status(409).json({ message: 'Room is full. Maximum participants reached.' });
+    }
+
+    // 4. Check if user is already an active participant
+    const existingActiveParticipant = await pool.query(
+      `SELECT * FROM room_participants WHERE room_id = $1 AND user_id = $2 AND left_at IS NULL`,
+      [room.id, userId]
+    );
+
+    if (existingActiveParticipant.rows.length > 0) {
+      return res.status(409).json({ message: 'You are already an active participant in this room.' });
+    }
+
+    // 5. Record participation (first time only)
+    await pool.query(
+      `INSERT INTO room_participants (room_id, user_id) VALUES ($1, $2)`,
+      [room.id, userId]
+    );
+
+    // Update current_active_participants for the response
+    const updatedParticipantCount = currentParticipantCount + 1;
+
+    res.status(200).json({
+      message: `Successfully joined room "${room.name}"!`,
+      room: {
+        id: room.id,
+        name: room.name,
+        topic: room.topic,
+        type: room.type,
+        status: room.status,
+        current_participants: updatedParticipantCount // Send the actual updated count
+      }
+    });
+
+  } catch (error) {
+    console.error('Error joining room (simple version):', error.stack);
+    res.status(500).json({ message: 'Server error during joining room.' });
+  }
+});
+// ------------------------------------------
 
 // --- Root API ---
 app.get('/api', (req, res) => {
