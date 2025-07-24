@@ -1,12 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext'; // Import useSocket
 // You might import useNavigate from 'react-router-dom' later for redirection
 
 function JoinRoomForm() {
   const { token, user } = useAuth(); // Need token for authenticated API call
+  const socket = useSocket(); // Get socket instance
   const [accessCode, setAccessCode] = useState('');
   const [message, setMessage] = useState('');
   const [joinedRoomDetails, setJoinedRoomDetails] = useState(null); // To show details of joined room
+
+  // Effect to listen for real-time updates ---
+  useEffect(() => {
+    if (!socket || !joinedRoomDetails) return; // Only listen if socket and a room are joined
+
+    const handleParticipantUpdate = (data) => {
+      // Check if the update is for the room currently displayed in this form
+      if (data.roomId === joinedRoomDetails.id) {
+        console.log(`Update for current room received: ${data.newParticipantCount} participants.`);
+        setJoinedRoomDetails(prevDetails => ({
+          ...prevDetails,
+          current_participants: data.newParticipantCount, // Update the count
+          // You can update other details from 'data' here if they change in real-time
+        }));
+        setMessage(`Participant update: ${data.username} ${data.action}! New count: ${data.newParticipantCount}`);
+      }
+    };
+
+    socket.on('room:participant_updated', handleParticipantUpdate);
+
+    // Cleanup: Remove listener when component unmounts or joinedRoomDetails/socket change
+    return () => {
+      socket.off('room:participant_updated', handleParticipantUpdate);
+    };
+  }, [socket, joinedRoomDetails]); // Listen when socket or joinedRoomDetails change
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
