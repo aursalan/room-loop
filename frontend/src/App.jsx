@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom'; // Import Routes, Route, Navigate
 import { useAuth } from './context/AuthContext';
 import './App.css';
+
+import { io } from 'socket.io-client'; // Import io from socket.io-client
+
 
 // --- Import authentication forms ---
 import LoginForm from './components/Auth/LoginForm';
@@ -24,6 +27,36 @@ function ProtectedRoute({ children }) {
 // --- App Component (main application logic) ---
 function App() {
   const { isLoggedIn, user, logout } = useAuth(); // Keeping these for the header display
+
+  // --- Socket.IO Client Connection Logic ---
+  useEffect(() => {
+    // Connect to your backend's Socket.IO server
+    const socket = io('http://localhost:3001'); // Replace with your backend URL
+
+    // Listen for connection events
+    socket.on('connect', () => {
+      console.log('Socket.IO Connected! Client ID:', socket.id);
+      // You might send an authentication event here later if required by backend
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket.IO Disconnected!');
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket.IO Connection Error:', err.message);
+    });
+
+    // Clean up the socket connection when the component unmounts
+    return () => {
+      if (socket.connected) {
+        socket.disconnect();
+        console.log('Socket.IO client cleaned up.');
+      }
+    };
+  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
+
+  // -----------------------------------------------
 
   return (
     <div className="App">

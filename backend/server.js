@@ -299,7 +299,7 @@ const roomStatusUpdateJob = cron.schedule('* * * * *', async () => { // Runs eve
 const server = http.createServer(app); // Create an HTTP server from your Express app
 const io = new Server(server, {
   cors: { // Configure CORS for Socket.IO connections (from your frontend)
-    origin: "*", // Your React app's development URL
+    origin: "http://localhost:5173", // Your React app's development URL
     methods: ["GET", "POST"]
   }
 });
