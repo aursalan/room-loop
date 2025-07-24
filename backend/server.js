@@ -4,6 +4,7 @@ const express = require('express');
 const { Pool } = require('pg'); // Import Pool from 'pg'
 const bcrypt = require('bcrypt'); // Import bcrypt
 const jwt = require('jsonwebtoken'); // Import jsonwebtoken
+const cron = require('node-cron'); // Import node-cron
 
 // --- User-defined utility to generate unique codes (optional, put in separate file later) ---
 function generateAccessCode() {
@@ -244,6 +245,50 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   }
 });
 // ------------------------------------------
+
+// --- Room Status Update Scheduler ---
+const roomStatusUpdateJob = cron.schedule('* * * * *', async () => { // Runs every minute
+  // The cron string '*/5 * * * *' would run every 5 minutes
+  // The cron string '*/1 * * * *' runs every 1 minute
+  // Learn more about cron syntax: https://crontab.guru/
+  
+    console.log('Running room status update job...');
+    const now = new Date(); // Get current timestamp
+  
+    try {
+      // 1. Update 'scheduled' rooms to 'live'
+      const scheduledToLive = await pool.query(
+        `UPDATE rooms
+         SET status = 'live', updated_at = NOW()
+         WHERE status = 'scheduled' AND start_time <= $1
+         RETURNING id, name, status`,
+        [now]
+      );
+      if (scheduledToLive.rowCount > 0) {
+        console.log(`Updated ${scheduledToLive.rowCount} rooms to LIVE:`, scheduledToLive.rows.map(r => r.name).join(', '));
+      }
+  
+      // 2. Update 'live' rooms to 'closed'
+      const liveToClosed = await pool.query(
+        `UPDATE rooms
+         SET status = 'closed', updated_at = NOW()
+         WHERE status = 'live' AND end_time <= $1
+         RETURNING id, name, status`,
+        [now]
+      );
+      if (liveToClosed.rowCount > 0) {
+        console.log(`Updated ${liveToClosed.rowCount} rooms to CLOSED:`, liveToClosed.rows.map(r => r.name).join(', '));
+      }
+  
+    } catch (error) {
+      console.error('Error in room status update job:', error.stack);
+    }
+  }, {
+    scheduled: true, // Make sure it's scheduled to run automatically
+    timezone: "Asia/Kolkata" // --- IMPORTANT: Set your timezone here (e.g., "Asia/Kolkata", "America/New_York")
+                             // This ensures your server's NOW() matches your expected time.
+  });
+// ------------------------------------
 
 // --- Root API ---
 app.get('/api', (req, res) => {
