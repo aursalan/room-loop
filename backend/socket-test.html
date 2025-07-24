@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Socket.IO Test Page</h1>
+    <p id="status">Connecting...</p>
+    <script>
+        const socket = io('http://localhost:3001'); // Connect to your backend's Socket.IO port
+
+        socket.on('connect', () => {
+            console.log('Connected to Socket.IO server!', socket.id);
+            document.getElementById('status').innerText = `Connected (ID: ${socket.id})`;
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from Socket.IO server.');
+            document.getElementById('status').innerText = 'Disconnected.';
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Socket.IO Connection Error:', error);
+            document.getElementById('status').innerText = `Connection Error: ${error.message}`;
+        });
+    </script>
+</body>
+</html>

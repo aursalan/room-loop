@@ -5,6 +5,8 @@ const { Pool } = require('pg'); // Import Pool from 'pg'
 const bcrypt = require('bcrypt'); // Import bcrypt
 const jwt = require('jsonwebtoken'); // Import jsonwebtoken
 const cron = require('node-cron'); // Import node-cron
+const http = require('http'); // Import http module
+const { Server } = require('socket.io'); // Import Server from socket.io
 
 // --- User-defined utility to generate unique codes (optional, put in separate file later) ---
 function generateAccessCode() {
@@ -293,12 +295,33 @@ const roomStatusUpdateJob = cron.schedule('* * * * *', async () => { // Runs eve
   });
 // ------------------------------------
 
+// --- Create HTTP server and Socket.IO server ---
+const server = http.createServer(app); // Create an HTTP server from your Express app
+const io = new Server(server, {
+  cors: { // Configure CORS for Socket.IO connections (from your frontend)
+    origin: "*", // Your React app's development URL
+    methods: ["GET", "POST"]
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log('A client connected!', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected!', socket.id);
+  });
+
+  // You'll add more real-time logic here later
+});
+// ----------------------------------------------------
+
 // --- Root API ---
 app.get('/api', (req, res) => {
   res.send('Hello from Roomloop Backend!');
 });
 // ------------------------------------------
 
-app.listen(port, () => {
+server.listen(port, () => { // --- Use server.listen instead of app.listen ---
   console.log(`Roomloop backend listening at http://localhost:${port}`);
+  console.log('Socket.IO server active.');
 });
