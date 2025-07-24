@@ -4,12 +4,20 @@ const express = require('express');
 const { Pool } = require('pg'); // Import Pool from 'pg'
 const bcrypt = require('bcrypt'); // Import bcrypt
 const jwt = require('jsonwebtoken'); // Import jsonwebtoken
+
+// --- User-defined utility to generate unique codes (optional, put in separate file later) ---
+function generateAccessCode() {
+  // Generates a random 6-character alphanumeric code
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+// ------------------------------------------
+
 const app = express();
 const port = 3001;
 
 app.use(express.json()); // Middleware to parse JSON request bodies
 
-// PostgreSQL connection pool configuration
+// --- PostgreSQL connection pool configuration ---
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -19,7 +27,7 @@ const pool = new Pool({
 });
 // ------------------------------------------
 
-// Test the database connection on server startup
+// --- Test the database connection on server startup ---
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.error('Error connecting to the database:', err.stack);
@@ -29,7 +37,7 @@ pool.query('SELECT NOW()', (err, res) => {
 });
 // ------------------------------------------
 
-// Define a JWT secret
+// --- Define a JWT secret ---
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // JWT Validation Middleware 
@@ -59,7 +67,7 @@ function authenticateToken(req, res, next) {
 }
 // ------------------------------------------
 
-// User Registration Route
+// --- User Registration Route ---
 app.post('/api/auth/register', async (req, res) => {
     const { email, username, password } = req.body;
   
@@ -101,7 +109,7 @@ app.post('/api/auth/register', async (req, res) => {
   });
 // ------------------------------------------
   
-// User Login Route
+// --- User Login Route ---
 app.post('/api/auth/login', async (req, res) => {
     const { email, username , password } = req.body;
   
@@ -150,7 +158,7 @@ app.post('/api/auth/login', async (req, res) => {
   });
 // ------------------------------------------
 
-// User Profile API (Protected)
+// --- User Profile API (Protected) ---
 app.get('/api/users/me', authenticateToken, async (req, res) => {
   try {
     // req.user is populated by the authenticateToken middleware
@@ -179,12 +187,70 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
 });
 // ------------------------------------------
 
-// Root API
+// --- Create Room API ---
+app.post('/api/rooms', authenticateToken, async (req, res) => {
+  const {
+    name,
+    topic,
+    description,
+    type, // 'public' or 'private'
+    max_participants,
+    startTime, // From frontend, will be ISO string
+    endTime // From frontend, will be ISO string
+  } = req.body;
+
+  // Basic validation
+  if (!name || !type || !startTime || !endTime) {
+    return res.status(400).json({ message: 'Name, type, start time, and end time are required.' });
+  }
+  if (type !== 'public' && type !== 'private') {
+    return res.status(400).json({ message: 'Room type must be "public" or "private".' });
+  }
+  if (new Date(startTime) >= new Date(endTime)) {
+    return res.status(400).json({ message: 'End time must be after start time.' });
+  }
+
+  try {
+    const hostId = req.user.id; // Get hostId from the authenticated user's token
+
+    let accessCode = null;
+    if (type === 'private') {
+      // Generate a unique access code for private rooms
+      // You might want a more robust uniqueness check in production, e.g., loop until unique
+      accessCode = generateAccessCode();
+    }
+
+    const newRoom = await pool.query(
+      `INSERT INTO rooms (
+        host_id, name, topic, description, type, max_participants,
+        start_time, end_time, access_code
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *`, // Return all columns of the new room
+      [
+        hostId, name, topic, description, type,
+        max_participants || null, // Allow max_participants to be null if not provided
+        startTime, endTime, accessCode
+      ]
+    );
+
+    res.status(201).json({
+      message: 'Room created successfully!',
+      room: newRoom.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error during room creation:', error.stack); // Log full stack for detailed error
+    res.status(500).json({ message: 'Server error during room creation.' });
+  }
+});
+// ------------------------------------------
+
+// --- Root API ---
 app.get('/api', (req, res) => {
   res.send('Hello from Roomloop Backend!');
 });
+// ------------------------------------------
 
 app.listen(port, () => {
   console.log(`Roomloop backend listening at http://localhost:${port}`);
 });
-// ------------------------------------------
