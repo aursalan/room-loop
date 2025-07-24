@@ -1,12 +1,43 @@
 import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom'; // Import Routes, Route, Navigate
 import { useAuth } from './context/AuthContext';
 import './App.css';
 
+// --- Import authentication forms ---
+import LoginForm from './components/Auth/LoginForm';
+import RegistrationForm from './components/Auth/RegistrationForm';
+
+// --- Temporary Dashboard Component (will be replaced later) ---
+function Dashboard() {
+  const { user, logout } = useAuth();
+  return (
+    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+      <h2>Welcome to your Dashboard, {user?.username}!</h2>
+      <p>This is a protected page. You can only see this when logged in.</p>
+      <button onClick={logout} style={{ padding: '10px 15px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}>Logout</button>
+    </div>
+  );
+}
+// --------------------------------------------------------------------
+
+// --- ProtectedRoute Component ---
+function ProtectedRoute({ children }) {
+  const { isLoggedIn } = useAuth();
+  if (!isLoggedIn) {
+    // Redirect to login page if not authenticated
+    return <Navigate to="/login" replace />;
+  }
+  return children; // Render the child components if authenticated
+}
+// ------------------------------------
+
+// --- App Component (main application logic) ---
 function App() {
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isLoggedIn, user, logout } = useAuth(); // Keeping these for the header display
 
   return (
     <div className="App">
+      {/* Header remains, displaying login status */}
       <header style={{ padding: '20px', borderBottom: '1px solid #eee', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Roomloop</h1>
         {isLoggedIn ? (
@@ -19,13 +50,20 @@ function App() {
         )}
       </header>
 
-      <main style={{ textAlign: 'center', marginTop: '50px' }}>
-        {/* This area will be used by your router to render different pages */}
-        {isLoggedIn ? (
-          <p style={{ fontSize: '1.2em' }}>Welcome back, {user?.username}! Explore rooms or create your own.</p>
-        ) : (
-          <p style={{ fontSize: '1.2em' }}>Please login or register to continue.</p>
-        )}
+      <main>
+        <Routes> {/* --- Define routes here --- */}
+          {/* Public routes */}
+          <Route path="/login" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <LoginForm />} />
+          <Route path="/register" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <RegistrationForm />} />
+
+          {/* Protected routes */}
+          {/* Default path '/' can be either login (if not logged in) or dashboard (if logged in) */}
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /> {/* Protecting root path */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /> {/* Explicit dashboard path */}
+
+          {/* Catch-all for 404 (optional but good practice) */}
+          <Route path="*" element={<h2 style={{textAlign: 'center'}}>404 - Page Not Found</h2>} />
+        </Routes>
       </main>
     </div>
   );
