@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { getRoomStatus } from '../../utils/dateTimeHelpers';
 // You might need a date formatting library later, but for now, basic ISO string works
 // For proper timezone handling, you might explore libraries like 'date-fns-tz' or 'moment-timezone' later.
 
@@ -13,10 +14,12 @@ function RoomCreationForm() {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [message, setMessage] = useState('');
+  const [createdRoom, setCreatedRoom] = useState(null); // State for the created room
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setCreatedRoom(null); // Clear previous room display
 
     if (!token) {
       setMessage('You must be logged in to create a room.');
@@ -62,6 +65,7 @@ function RoomCreationForm() {
 
       if (response.ok) {
         setMessage(`Room "${data.room.name}" created successfully! Access Code: ${data.room.access_code || 'N/A'}`);
+        setCreatedRoom(data.room); // --- Store the created room data ---
         // Clear form
         setName('');
         setTopic('');
@@ -192,6 +196,28 @@ function RoomCreationForm() {
         </button>
       </form>
       {message && <p style={{ marginTop: '15px', padding: '10px', borderRadius: '5px', backgroundColor: message.includes('successful') ? '#d4edda' : '#f8d7da', color: message.includes('successful') ? '#155724' : '#721c24', border: message.includes('successful') ? '1px solid #c3e6cb' : '1px solid #f5c6cb' }}>{message}</p>}
+
+       {/* --- Display Created Room Status --- */}
+       {createdRoom && (
+        <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #007bff', borderRadius: '8px', backgroundColor: '#e7f0ff' }}>
+          <h3>Newly Created Room: {createdRoom.name}</h3>
+          <p>Topic: {createdRoom.topic || 'N/A'}</p>
+          <p>Type: {createdRoom.type}</p>
+          {createdRoom.type === 'private' && <p>Access Code: <strong>{createdRoom.access_code}</strong></p>}
+          <p>Start: {new Date(createdRoom.start_time).toLocaleString()}</p>
+          <p>End: {new Date(createdRoom.end_time).toLocaleString()}</p>
+          <p>
+            Status: <span style={{
+              fontWeight: 'bold',
+              color: getRoomStatus(createdRoom.start_time, createdRoom.end_time) === 'live' ? 'green' :
+                     getRoomStatus(createdRoom.start_time, createdRoom.end_time) === 'scheduled' ? 'orange' : 'red'
+            }}>
+              {getRoomStatus(createdRoom.start_time, createdRoom.end_time).toUpperCase()}
+            </span>
+          </p>
+        </div>
+      )}
+      {/* ------------------------------------------- */}
     </div>
   );
 }
