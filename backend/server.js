@@ -319,6 +319,7 @@ io.on('connection', (socket) => {
 app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
   const { accessCode } = req.params; // Get accessCode from URL parameters
   const userId = req.user.id; // Get userId from authenticated user
+  const username = req.user.username; // Get username from authenticated user
 
   // Basic validation: accessCode must be provided in URL
   if (!accessCode) {
@@ -371,6 +372,21 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
 
     // Update current_active_participants for the response
     const updatedParticipantCount = currentParticipantCount + 1;
+
+    // --- Emit Socket.IO event ---
+    // For MVP simplicity, we'll emit to all connected clients.
+    // For production, you'd use io.to(room.id).emit(...) if clients join Socket.IO rooms.
+    io.emit('room:participant_updated', {
+      roomId: room.id,
+      userId: userId, // User who just joined
+      username: username, // Include username
+      action: 'joined',
+      newParticipantCount: updatedParticipantCount,
+      roomName: room.name,
+      roomType: room.type, // Useful for frontend to filter
+    });
+    console.log(`Socket.IO: Emitted 'room:participant_updated' for room ${room.name} (Joined: ${username})`);
+    // -------------------------------------------------------------
 
     res.status(200).json({
       message: `Successfully joined room "${room.name}"!`,

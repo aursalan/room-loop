@@ -24,6 +24,15 @@
             console.error('Socket.IO Connection Error:', error);
             document.getElementById('status').innerText = `Connection Error: ${error.message}`;
         });
+
+        // --- Listen for the custom event from the server ---
+        socket.on('room:participant_updated', (data) => {
+            console.log('Received participant update:', data);
+            // You can update the page's content here based on the data if you want a visual
+            const statusElement = document.getElementById('status');
+            statusElement.innerText = `Connected (ID: ${socket.id}) - Room: ${data.roomName}, Participants: ${data.newParticipantCount}`;
+        });
+        // --------------------------------------------------------
     </script>
 </body>
 </html>
