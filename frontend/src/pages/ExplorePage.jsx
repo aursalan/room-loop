@@ -10,9 +10,14 @@ function ExplorePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // --- NEW: Filter states ---
+  const [filterTag, setFilterTag] = useState('');
+  const [filterStatus, setFilterStatus] = useState('live'); // Default filter status
+  // --------------------------
+
   useEffect(() => {
     const fetchPublicRooms = async () => {
-      if (!token) { // Ensure token is available before fetching
+      if (!token) {
         setLoading(false);
         setError("Authentication token missing. Please log in.");
         return;
@@ -20,10 +25,22 @@ function ExplorePage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch('/api/rooms/public', { // Call your backend API
+
+        // --- NEW: Construct URL with filter query parameters ---
+        const queryParams = new URLSearchParams();
+        if (filterTag) {
+          queryParams.append('tag', filterTag);
+        }
+        if (filterStatus && filterStatus !== 'all') { // Only append if not 'all' or empty
+          queryParams.append('status', filterStatus);
+        }
+        const url = `/api/rooms/public?${queryParams.toString()}`;
+        // ----------------------------------------------------
+
+        const response = await fetch(url, { // Use the constructed URL
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`, // Send JWT
+            'Authorization': `Bearer ${token}`,
           },
         });
 
@@ -33,7 +50,7 @@ function ExplorePage() {
         }
 
         const data = await response.json();
-        setRooms(data); // Set the array of rooms
+        setRooms(data);
         setLoading(false);
 
       } catch (err) {
@@ -43,12 +60,12 @@ function ExplorePage() {
       }
     };
 
-    if (isLoggedIn && token) { // Only fetch if user is logged in
+    if (isLoggedIn && token) {
       fetchPublicRooms();
     } else {
-      setLoading(false); // If not logged in, no rooms to load
+      setLoading(false);
     }
-  }, [token, isLoggedIn]); // Re-fetch if token or login status changes
+  }, [token, isLoggedIn, filterTag, filterStatus]); // --- NEW: Add filter states to dependency array ---
 
   if (loading) {
     return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading public rooms...</div>;
@@ -61,6 +78,53 @@ function ExplorePage() {
   return (
     <div style={{ maxWidth: '900px', margin: '50px auto', padding: '20px', border: '1px solid #ddd', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
       <h2 style={{ textAlign: 'center', color: '#0056b3', marginBottom: '30px' }}>Explore Live Public Rooms</h2>
+      
+      {/* --- NEW: Filter Controls --- */}
+      <div style={{ marginBottom: '20px', padding: '15px', border: '1px solid #e0e0e0', borderRadius: '8px', backgroundColor: '#f9f9f9', display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
+        {/* Tag Filter */}
+        <div style={{ flex: '1 1 auto', minWidth: '180px' }}>
+          <label htmlFor="filterTag" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Filter by Tag:</label>
+          <input
+            type="text"
+            id="filterTag"
+            value={filterTag}
+            onChange={(e) => setFilterTag(e.target.value)}
+            placeholder="e.g., Social, Work"
+            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+          />
+        </div>
+
+        {/* Status Filter */}
+        <div style={{ flex: '1 1 auto', minWidth: '180px' }}>
+          <label htmlFor="filterStatus" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Filter by Status:</label>
+          <select
+            id="filterStatus"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: 'white' }}
+          >
+            <option value="live">Live</option>
+            <option value="starting_soon">Starting Soon</option>
+            <option value="all">All (Live & Starting Soon)</option> {/* Option to show both */}
+          </select>
+        </div>
+
+        {/* Clear Filters Button */}
+        <div style={{ flex: '0 0 auto', alignSelf: 'flex-end', marginTop: 'auto' }}>
+          <button
+            onClick={() => {
+              setFilterTag('');
+              setFilterStatus('live'); // Reset to default filter
+            }}
+            style={{ padding: '10px 15px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+      {/* ---------------------------- */}
+
+
       {rooms.length > 0 ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
           {rooms.map(room => (
