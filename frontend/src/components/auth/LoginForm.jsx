@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext'; // Import useAuth
+import { useNavigate } from 'react-router-dom'; // --- NEW: Import useNavigate
 
 // Helper function to validate email format (basic regex)
 const isValidEmail = (input) => {
@@ -11,8 +12,11 @@ function LoginForm() {
   const [emailOrUsername, setEmailOrUsername] = useState(''); // Unified state for input
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  
 
   const {login} = useAuth(); // Get login function from context
+  const navigate = useNavigate(); // --- NEW: Initialize useNavigate
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,6 +47,7 @@ function LoginForm() {
         setEmailOrUsername(''); // Clear input on success
         setPassword('');
         console.log('Login Success:', data);
+        navigate('/dashboard', { replace: true }); // --- NEW: Redirect on successful login ---
         // You will redirect the user here later
       } else {
         setMessage(`Login failed: ${data.message || 'Unknown error'}`);
@@ -90,6 +95,11 @@ function LoginForm() {
         </button>
       </form>
       {message && <p style={{ marginTop: '15px', color: message.includes('successful') ? 'green' : 'red' }}>{message}</p>}
+      {/* --- NEW: Link to Registration Page --- */}
+      <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9em' }}>
+        Don't have an account? <a href="#" onClick={() => navigate('/register')} style={{ color: '#007bff', textDecoration: 'none' }}>Register here</a>
+      </p>
+      {/* ------------------------------------- */}
     </div>
   );
 }
