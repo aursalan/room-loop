@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Stores user data (id, username, email)
   const [token, setToken] = useState(null); // Stores the JWT
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Derived state
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true); // Loading auth status
 
   // Function to initialize state from localStorage on app load
   useEffect(() => {
@@ -27,6 +28,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user');
       }
     }
+    setIsLoadingAuth(false); // Mark loading complete after check
   }, []); // Empty dependency array means this runs once on mount
 
   // Function to handle login (called by LoginForm)
@@ -34,6 +36,7 @@ export const AuthProvider = ({ children }) => {
     setToken(newToken);
     setUser(newUser);
     setIsLoggedIn(true);
+    setIsLoadingAuth(false); // Auth is now loaded
     localStorage.setItem('token', newToken); // Persist to localStorage
     localStorage.setItem('user', JSON.stringify(newUser)); // Persist to localStorage
   };
@@ -43,6 +46,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setIsLoggedIn(false);
+    setIsLoadingAuth(false); // Auth is now loaded
     localStorage.removeItem('token'); // Clear from localStorage
     localStorage.removeItem('user'); // Clear from localStorage
   };
@@ -54,6 +58,7 @@ export const AuthProvider = ({ children }) => {
     isLoggedIn,
     login,
     logout,
+    isLoadingAuth, 
   };
 
   return (

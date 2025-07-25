@@ -14,7 +14,11 @@ import RoomPage from './pages/RoomPage'; // --- Import RoomPage
 
 // --- ProtectedRoute Component ---
 function ProtectedRoute({ children }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isLoadingAuth } = useAuth();
+
+  if (isLoadingAuth) { // Show loading state if auth check is in progress
+    return <div style={{ textAlign: 'center', marginTop: '100px', fontSize: '1.5em' }}>Loading authentication...</div>;
+  }
   if (!isLoggedIn) {
     // Redirect to login page if not authenticated
     return <Navigate to="/login" replace />;

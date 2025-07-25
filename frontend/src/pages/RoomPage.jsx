@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // Import useParams, useNavigate
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
-import { getRoomStatus, formatDisplayTime } from '../utils/dateTimeHelpers'; // Adjust path as needed
+import { getRoomStatus, formatDisplayTime } from '../utils/dateTimeHelpers';
 
 function RoomPage() {
   const { accessCode } = useParams(); // Get accessCode from URL parameters
-  const { token, isLoggedIn, user } = useAuth();
+  const { token, isLoggedIn, user, isLoadingAuth } = useAuth(); // Get isLoadingAuth
   const socket = useSocket();
   const navigate = useNavigate(); // For redirection on error or logout
 
@@ -62,28 +62,38 @@ function RoomPage() {
 
   // --- Effect to trigger joinRoom on component mount or token/code change ---
   useEffect(() => {
-    // Prevent running twice in StrictMode for API calls that cause side effects like joins/inserts
-    if (hasFetchedRoom.current) {
-      return; // Skip if already fetched in this mount cycle (due to StrictMode double-render)
+
+    // If auth state is still loading, WAIT. Don't make decisions yet.
+    if (isLoadingAuth) {
+      return; // Exit effect early if auth is still loading
     }
 
+    // Prevent running twice in StrictMode for API calls that cause side effects like joins/inserts
+    if (hasFetchedRoom.current) {
+      return;
+    }
+
+    // Now that auth is loaded (isLoadingAuth is false):
     if (isLoggedIn && token && accessCode) {
-      joinRoom(accessCode, token, user?.id, user?.username);
+      joinRoom(accessCode, token); // user?.id and user?.username were passed to joinRoom before, but not needed in this version
       hasFetchedRoom.current = true; // Mark as fetched
-    } else if (!isLoggedIn) {
-      setLoading(false);
+    } else if (!isLoggedIn) { // This condition will now run ONLY AFTER isLoadingAuth is false
+      setLoading(false); // Stop loading room
       navigate('/login', { replace: true });
-    } else {
+    } else { // This handles cases like missing accessCode in URL (e.g. /room/ typed without a code)
       setLoading(false);
       setError("No room access code provided in URL.");
     }
 
-    // Cleanup function (important for StrictMode, though not directly for ref here)
     return () => {
-      // If you had any active subscriptions or intervals from *this specific effect*, you'd clean them here.
-      // For this specific API call, the ref handles the double-call.
+      // Cleanup for StrictMode for this particular pattern:
+      // Reset hasFetchedRoom.current when the component unmounts for development purposes,
+      // so that if it remounts (e.g., in StrictMode), it tries to fetch again.
+      hasFetchedRoom.current = false;
+      // You could also add specific cleanup for socket listeners if they were defined inside this effect
     };
-  }, [accessCode, token, isLoggedIn, navigate, user]);
+  }, [accessCode, token, isLoggedIn, navigate, user, isLoadingAuth]); // Add isLoadingAuth dependency
+
 
   // --- Effect to listen for real-time updates (similar to JoinRoomForm) ---
   useEffect(() => {
