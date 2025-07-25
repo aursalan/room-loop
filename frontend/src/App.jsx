@@ -31,7 +31,11 @@ function ProtectedRoute({ children }) {
 
 // --- App Component (main application logic) ---
 function App() {
-  const { isLoggedIn, user, logout } = useAuth(); // Keeping these for the header display
+  const { isLoggedIn, user, logout, token, isLoadingAuth } = useAuth(); // Keeping these for the header display
+
+  // --- NEW LOG: App Component Render Trace ---
+  console.log('App: Component Rendered/Re-rendered. Auth State:', { user: user?.username, token: token ? 'present' : 'null', isLoggedIn, isLoadingAuth });
+  // -------------------------------------------
 
   return (
     <div className="App">

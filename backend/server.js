@@ -99,12 +99,27 @@ app.post('/api/auth/register', async (req, res) => {
         'INSERT INTO users (email, username, password_hash) VALUES ($1, $2, $3) RETURNING id, email, username, created_at',
         [email, username, passwordHash]
       );
+
+      const registeredUser = newUser.rows[0]; // Get the newly registered user's data
+
+    // --- Generate a JWT for the newly registered user ---
+    const token = jwt.sign(
+      { id: registeredUser.id, username: registeredUser.username, email: registeredUser.email },
+      JWT_SECRET,
+      { expiresIn: '1h' } // Token expires in 1 hour
+    );
+    // --------------------------------------------------------
   
-      res.status(201).json({
-        message: 'User registered successfully!',
-        user: newUser.rows[0]
-      });
-  
+    res.status(201).json({
+      message: 'User registered successfully!',
+      user: { // Return necessary user details
+          id: registeredUser.id,
+          username: registeredUser.username,
+          email: registeredUser.email
+      },
+      token: token // --- NEW: Include the generated token in the response ---
+    });
+    
     } catch (error) {
       console.error('Error during user registration:', error.message);
       res.status(500).json({ message: 'Server error during registration.' });

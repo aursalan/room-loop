@@ -10,10 +10,14 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Derived state
   const [isLoadingAuth, setIsLoadingAuth] = useState(true); // Loading auth status
 
-  // Function to initialize state from localStorage on app load
+  // --- NEW LOGS: Trace rehydration ---
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
+
+    console.log('AuthContext: useEffect (rehydration) triggered.');
+    console.log('AuthContext: localStorage - storedToken:', storedToken ? 'present' : 'null');
+    console.log('AuthContext: localStorage - storedUser:', storedUser ? 'present' : 'null');
 
     if (storedToken && storedUser) {
       try {
@@ -21,35 +25,43 @@ export const AuthProvider = ({ children }) => {
         setUser(parsedUser);
         setToken(storedToken);
         setIsLoggedIn(true);
+        console.log('AuthContext: Rehydrated from localStorage. User:', parsedUser.username, 'Token:', storedToken.substring(0, 10) + '...');
       } catch (error) {
-        console.error('Failed to parse user from localStorage:', error);
-        // Clear corrupted data
+        console.error('AuthContext: Failed to parse user from localStorage:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        setUser(null); setToken(null); setIsLoggedIn(false); // Ensure state is reset on parse error
+        console.log('AuthContext: Cleared corrupted localStorage data.');
       }
+    } else {
+        console.log('AuthContext: No token/user found in localStorage, user is logged out.');
+        setUser(null); setToken(null); setIsLoggedIn(false); // Ensure state is consistently null/false
     }
-    setIsLoadingAuth(false); // Mark loading complete after check
-  }, []); // Empty dependency array means this runs once on mount
+    setIsLoadingAuth(false);
+    console.log('AuthContext: Finished rehydration. isLoadingAuth set to false.');
+  }, []);
+  // ------------------------------------
 
-  // Function to handle login (called by LoginForm)
+  // --- NEW LOGS: Trace login/logout ---
   const login = (newToken, newUser) => {
     setToken(newToken);
     setUser(newUser);
     setIsLoggedIn(true);
-    setIsLoadingAuth(false); // Auth is now loaded
-    localStorage.setItem('token', newToken); // Persist to localStorage
-    localStorage.setItem('user', JSON.stringify(newUser)); // Persist to localStorage
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(newUser));
+    setIsLoadingAuth(false);
+    console.log('AuthContext: LOGIN successful. User:', newUser.username, 'Token:', newToken.substring(0, 10) + '...');
   };
 
-  // Function to handle logout (called by a logout button)
   const logout = () => {
     setToken(null);
     setUser(null);
     setIsLoggedIn(false);
-    setIsLoadingAuth(false); // Auth is now loaded
-    localStorage.removeItem('token'); // Clear from localStorage
-    localStorage.removeItem('user'); // Clear from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    console.log('AuthContext: LOGOUT successful. States cleared.');
   };
+  // ------------------------------------
 
   // The value provided to consuming components
   const authContextValue = {
@@ -60,6 +72,10 @@ export const AuthProvider = ({ children }) => {
     logout,
     isLoadingAuth, 
   };
+
+  // --- NEW LOG: Trace context value on each render ---
+  console.log('AuthContext: Provider rendering. Current context value:', { user: user?.username, token: token ? 'present' : 'null', isLoggedIn, isLoadingAuth });
+  // --------------------------------------------------
 
   return (
     <AuthContext.Provider value={authContextValue}>
