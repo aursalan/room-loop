@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'; // Ensure useAuth is imported
 // Ensure these import paths are correct based on your file structure:
 import RoomCreationForm from '../components/Room/RoomCreationForm'; // Corrected path
 import JoinRoomForm from '../components/Room/JoinRoomForm'; // Corrected path
+import { Link, useNavigate } from 'react-router-dom'; 
 
 function Dashboard() {
   // Get isLoadingAuth from useAuth() along with other auth states
@@ -122,6 +123,25 @@ function Dashboard() {
           <p>User ID: {profileData.id}</p>
           <p>Account created: {new Date(profileData.created_at).toLocaleDateString()}</p>
           <p>This is a protected page. You can only see this when logged in.</p>
+          {/* --- NEW: Explore Page Link/Button --- */}
+          <div style={{ marginTop: '30px', marginBottom: '30px' }}>
+            <Link to="/explore" style={{
+              padding: '10px 20px', backgroundColor: '#6f42c1', color: 'white',
+              border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1.1em',
+              textDecoration: 'none' // Remove underline for link
+            }}>
+              Explore Public Rooms
+            </Link>
+            {/* Or if you prefer a button:
+            <button onClick={() => navigate('/explore')} style={{
+              padding: '10px 20px', backgroundColor: '#6f42c1', color: 'white',
+              border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1.1em'
+            }}>
+              Explore Public Rooms
+            </button>
+            */}
+          </div>
+          {/* --------------------------------- */}
         </>
       ) : (
         // This will display "Loading authentication..." (from ProtectedRoute if not loaded)
@@ -129,10 +149,6 @@ function Dashboard() {
         // It will no longer display the previous direct error message string if 'error' state is not explicitly set.
         <p>{error || (isLoadingAuth ? "Loading authentication..." : "No profile data available. Please log in.")}</p>
       )}
-      <button onClick={handleLogout} style={{ padding: '10px 15px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '20px' }}>Logout</button>
-
-      {/* --- Visual Separators and Forms --- */}
-      <hr style={{ margin: '40px auto', width: '50%' }} />
 
       <RoomCreationForm />
 
