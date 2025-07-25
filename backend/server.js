@@ -417,13 +417,53 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
 });
 // ------------------------------------------
 
-// ---List Public Rooms API ---
+// --- List Public Rooms API (WITH TAG & STATUS FILTERS - Consolidated Code) ---
 app.get('/api/rooms/public', authenticateToken, async (req, res) => {
   try {
-    const publicRooms = await pool.query(
-      // The error is likely somewhere in this multi-line string or its surrounding.
-      // Look at the backticks carefully.
-      `SELECT
+    const { tag, status } = req.query; // Extract 'tag' and 'status' query parameters
+
+    let queryParts = []; // Array to hold parts of the WHERE clause
+    let queryParams = []; // Array to hold parameters for the SQL query
+    let paramIndex = 1; // Counter to generate $1, $2, $3... for parameterized query
+
+    // Base filter: Always include public rooms
+    queryParts.push(`r.type = 'public'`);
+
+    // Handle Status Filter
+    if (status) {
+      const now = new Date(); // Get current timestamp for 'starting_soon' calculation
+      const thirtyMinutesFromNow = new Date(now.getTime() + 30 * 60 * 1000); // Calculate 30 minutes from now
+
+      if (status === 'live') {
+        queryParts.push(`r.status = 'live'`);
+      } else if (status === 'starting_soon') {
+        // Rooms are 'starting soon' if they are 'scheduled' and start within the next 30 minutes
+        queryParams.push(now.toISOString()); // Parameter for NOW()
+        queryParams.push(thirtyMinutesFromNow.toISOString()); // Parameter for 30 minutes from NOW
+        
+        // Use dynamically incrementing parameter indices
+        queryParts.push(`r.status = 'scheduled' AND r.start_time > $${paramIndex++} AND r.start_time <= $${paramIndex++}`);
+      } else {
+        // Invalid status value provided
+        return res.status(400).json({ message: 'Invalid status filter. Must be "live" or "starting_soon".' });
+      }
+    } else {
+      // Default behavior if no status filter is provided: only 'live' public rooms
+      queryParts.push(`r.status = 'live'`);
+    }
+
+    // Handle Tag Filter (maps to r.topic field in your database)
+    if (tag) {
+      queryParams.push(`%${tag.toLowerCase()}%`); // Add parameter value for tag
+      queryParts.push(`LOWER(r.topic) LIKE $${paramIndex++}`); // Use dynamically incrementing parameter index
+    }
+
+    // Combine all query parts into a WHERE clause string
+    const whereClauseString = queryParts.length > 0 ? `WHERE ${queryParts.join(' AND ')}` : '';
+
+    // Construct the full SQL query
+    const query = `
+      SELECT
           r.id,
           r.name,
           r.topic,
@@ -433,23 +473,27 @@ app.get('/api/rooms/public', authenticateToken, async (req, res) => {
           r.start_time,
           r.end_time,
           r.status,
-          r.access_code,
+          r.access_code, -- Include access_code if needed for display or filtering later, otherwise remove
           u.username AS host_username,
           (SELECT COUNT(*) FROM room_participants WHERE room_id = r.id AND left_at IS NULL) as current_active_participants
        FROM rooms r
        JOIN users u ON r.host_id = u.id
-       WHERE r.type = 'public' AND r.status = 'live'
-       ORDER BY r.start_time ASC` // Ensure this backtick is the closing one, and the first one is at the start
-    );
+       ${whereClauseString}
+       ORDER BY r.start_time ASC
+    `;
+
+    // Execute the query with the collected parameters
+    const publicRooms = await pool.query(query, queryParams);
 
     res.status(200).json(publicRooms.rows);
 
   } catch (error) {
-    console.error('Error fetching public rooms:', error.stack);
+    console.error('Error fetching public rooms with filters:', error.stack);
     res.status(500).json({ message: 'Server error while fetching public rooms.' });
   }
 });
-// ------------------------------------
+// --------------------------------------------------------------------------------------------------
+
 
 // --- Root API ---
 app.get('/api', (req, res) => {
