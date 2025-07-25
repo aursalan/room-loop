@@ -417,6 +417,40 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
 });
 // ------------------------------------------
 
+// ---List Public Rooms API ---
+app.get('/api/rooms/public', authenticateToken, async (req, res) => {
+  try {
+    const publicRooms = await pool.query(
+      // The error is likely somewhere in this multi-line string or its surrounding.
+      // Look at the backticks carefully.
+      `SELECT
+          r.id,
+          r.name,
+          r.topic,
+          r.description,
+          r.type,
+          r.max_participants,
+          r.start_time,
+          r.end_time,
+          r.status,
+          r.access_code,
+          u.username AS host_username,
+          (SELECT COUNT(*) FROM room_participants WHERE room_id = r.id AND left_at IS NULL) as current_active_participants
+       FROM rooms r
+       JOIN users u ON r.host_id = u.id
+       WHERE r.type = 'public' AND r.status = 'live'
+       ORDER BY r.start_time ASC` // Ensure this backtick is the closing one, and the first one is at the start
+    );
+
+    res.status(200).json(publicRooms.rows);
+
+  } catch (error) {
+    console.error('Error fetching public rooms:', error.stack);
+    res.status(500).json({ message: 'Server error while fetching public rooms.' });
+  }
+});
+// ------------------------------------
+
 // --- Root API ---
 app.get('/api', (req, res) => {
   res.send('Hello from Roomloop Backend!');
