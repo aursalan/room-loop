@@ -329,10 +329,22 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
   try {
     // 1. Find the room by access code and get details including current active participants
     const roomResult = await pool.query(
-      `SELECT id, host_id, name, type, status, max_participants, access_code,
-              (SELECT COUNT(*) FROM room_participants WHERE room_id = rooms.id AND left_at IS NULL) as current_active_participants
-       FROM rooms
-       WHERE access_code = $1`,
+      `SELECT
+          r.id,
+          r.host_id,
+          r.name,
+          r.topic,
+          r.description,
+          r.type,
+          r.status,
+          r.max_participants,
+          r.access_code,
+          r.start_time,
+          r.end_time,
+          (SELECT COUNT(*) FROM room_participants WHERE room_id = r.id AND left_at IS NULL) as current_active_participants
+       FROM
+          rooms r
+       WHERE r.access_code = $1`, // <<< --- ENSURE THIS LINE ENDS WITH A BACKTICK (`) --- >>>
       [accessCode]
     );
 
@@ -393,8 +405,11 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
       newParticipantList: currentActiveParticipantsList, // This is the value being sent
       roomName: room.name,
       roomType: room.type, // Useful for frontend to filter
+      start_time: room.start_time,
+      end_time: room.end_time,
     });
     console.log(`Socket.IO: Emitted 'room:participant_updated' for room ${room.name} (Joined: ${username})`);
+    console.log('Backend: Room object fetched from DB in Join API:', room);
     // -------------------------------------------------------------
 
     res.status(200).json({
@@ -403,10 +418,13 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
         id: room.id,
         name: room.name,
         topic: room.topic,
+        description: room.description,
         type: room.type,
         status: room.status,
         current_participants: updatedParticipantCount, // Send the actual updated count
         participants: currentActiveParticipantsList, // This is the list sent
+        start_time: room.start_time, // --- NEW: Include start_time here ---
+        end_time: room.end_time,     // --- NEW: Include end_time here ---
       }
     });
 
@@ -493,7 +511,6 @@ app.get('/api/rooms/public', authenticateToken, async (req, res) => {
   }
 });
 // --------------------------------------------------------------------------------------------------
-
 
 // --- Root API ---
 app.get('/api', (req, res) => {
