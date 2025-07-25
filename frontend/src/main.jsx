@@ -7,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { SocketProvider } from './context/SocketContext'; // Import SocketProvider
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <SocketProvider>
@@ -15,5 +15,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
-  </React.StrictMode>,
+  // </React.StrictMode>,
 );

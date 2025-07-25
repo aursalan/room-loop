@@ -370,8 +370,16 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
       [room.id, userId]
     );
 
-    // Update current_active_participants for the response
-    const updatedParticipantCount = currentParticipantCount + 1;
+    // Fetch actual current active participants count and list AFTER the join
+    const currentParticipantsData = await pool.query(
+      `SELECT rp.user_id, u.username
+       FROM room_participants rp
+       JOIN users u ON rp.user_id = u.id
+       WHERE rp.room_id = $1 AND rp.left_at IS NULL`,
+      [room.id]
+    );
+    const currentActiveParticipantsList = currentParticipantsData.rows;
+    const updatedParticipantCount = currentActiveParticipantsList.length;
 
     // --- Emit Socket.IO event ---
     // For MVP simplicity, we'll emit to all connected clients.
@@ -382,6 +390,7 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
       username: username, // Include username
       action: 'joined',
       newParticipantCount: updatedParticipantCount,
+      newParticipantList: currentActiveParticipantsList, // This is the value being sent
       roomName: room.name,
       roomType: room.type, // Useful for frontend to filter
     });
@@ -396,7 +405,8 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
         topic: room.topic,
         type: room.type,
         status: room.status,
-        current_participants: updatedParticipantCount // Send the actual updated count
+        current_participants: updatedParticipantCount, // Send the actual updated count
+        participants: currentActiveParticipantsList, // This is the list sent
       }
     });
 

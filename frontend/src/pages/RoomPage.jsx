@@ -13,6 +13,7 @@ function RoomPage() {
   const [roomData, setRoomData] = useState(null); // Stores the joined room's data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [participants, setParticipants] = useState([]);
 
   const hasFetchedRoom = useRef(false);
 
@@ -50,6 +51,7 @@ function RoomPage() {
       }
 
       setRoomData(data.room); // Store the full room data returned by join API
+      setParticipants(data.room.participants || []);
       setLoading(false);
       console.log('Successfully joined room via URL:', data.room);
 
@@ -106,6 +108,7 @@ function RoomPage() {
           ...prevData,
           current_participants: data.newParticipantCount,
         }));
+        setParticipants(data.newParticipantList);
         // Optionally, display a transient message about who joined/left
         // setMessage(`Participant update: ${data.username} ${data.action}! New count: ${data.newParticipantCount}`);
       }
@@ -151,7 +154,26 @@ function RoomPage() {
       <p>Ends: {formatDisplayTime(roomData.end_time)}</p>
       <hr style={{ margin: '30px auto', width: '80%' }} />
       <p style={{ color: '#888' }}>You are viewing room {accessCode}</p>
-      {/* Add more interactive elements later */}
+      
+      <hr style={{ margin: '30px auto', width: '80%' }} />
+
+      <h3>Who's in the room:</h3>
+      {participants.length > 0 ? (
+        <ul style={{ listStyleType: 'none', padding: 0 }}>
+          {participants.map(p => (
+            <li key={p.user_id} style={{ padding: '5px 0', borderBottom: '1px dotted #eee', display: 'flex', alignItems: 'center' }}>
+              {p.username}
+              {/* Optional: Add (You) tag for the current user */}
+              {p.user_id === user?.id && <span style={{ color: '#007bff', marginLeft: '10px', fontSize: '0.9em' }}>(You)</span>}
+              {/* Optional: Add (Host) tag for the room creator */}
+              {p.user_id === roomData.host_id && <span style={{ color: '#28a745', marginLeft: '10px', fontSize: '0.9em' }}>(Host)</span>}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p style={{textAlign: 'center', color: '#666'}}>No participants yet. Be the first!</p>
+      )}
+      
     </div>
   );
 }
