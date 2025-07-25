@@ -7,6 +7,7 @@ import { getRoomStatus, formatDisplayTime } from '../utils/dateTimeHelpers';
 function RoomPage() {
   const { accessCode } = useParams(); // Get accessCode from URL parameters
   const { token, isLoggedIn, user, isLoadingAuth } = useAuth(); // Get isLoadingAuth
+  const [copyMessage, setCopyMessage] = useState(''); // State for copy confirmation message
   const socket = useSocket();
   const navigate = useNavigate(); // For redirection on error or logout
 
@@ -134,6 +135,19 @@ function RoomPage() {
     return <div style={{ textAlign: 'center', marginTop: '50px' }}>No room data available. Please check the access code.</div>;
   }
 
+  const handleCopyLink = async () => {
+    const roomUrl = `${window.location.origin}/room/${accessCode}`; // Construct the full URL
+    try {
+      await navigator.clipboard.writeText(roomUrl);
+      setCopyMessage('Link copied!');
+      setTimeout(() => setCopyMessage(''), 3000); // Clear message after 3 seconds
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      setCopyMessage('Failed to copy link.');
+      setTimeout(() => setCopyMessage(''), 3000);
+    }
+  };
+
   // Display the room details if data is available
   return (
     <div style={{ maxWidth: '800px', margin: '50px auto', padding: '30px', border: '1px solid #007bff', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
@@ -156,6 +170,21 @@ function RoomPage() {
       <p style={{ color: '#888' }}>You are viewing room {accessCode}</p>
       
       <hr style={{ margin: '30px auto', width: '80%' }} />
+
+      {/* --- NEW: Share Link Section --- */}
+      <div style={{ textAlign: 'center', marginTop: '20px' }}>
+        <button
+          onClick={handleCopyLink}
+          style={{
+            padding: '10px 15px', backgroundColor: '#6c757d', color: 'white',
+            border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1em'
+          }}
+        >
+          Copy Room Link
+        </button>
+        {copyMessage && <p style={{ marginTop: '10px', color: copyMessage.includes('copied') ? 'green' : 'red' }}>{copyMessage}</p>}
+      </div>
+      {/* ------------------------------- */}
 
       <h3>Who's in the room:</h3>
       {participants.length > 0 ? (
