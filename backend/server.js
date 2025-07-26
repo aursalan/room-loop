@@ -234,12 +234,7 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   try {
     const hostId = req.user.id; // Get hostId from the authenticated user's token
 
-    let accessCode = null;
-    if (type === 'private') {
-      // Generate a unique access code for private rooms
-      // You might want a more robust uniqueness check in production, e.g., loop until unique
-      accessCode = generateAccessCode();
-    }
+    let accessCode = generateAccessCode();
 
     const newRoom = await pool.query(
       `INSERT INTO rooms (
