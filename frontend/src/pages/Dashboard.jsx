@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'; // --- NEW: Import useRef
 import { useAuth } from '../context/AuthContext'; // Ensure useAuth is imported
 // Ensure these import paths are correct based on your file structure:
-import RoomCreationForm from '../components/rroom/RoomCreationForm'; // Corrected path
+import RoomCreationForm from '../components/room/RoomCreationForm'; // Corrected path
 import JoinRoomForm from '../components/room/JoinRoomForm'; // Corrected path
 import { Link, useNavigate } from 'react-router-dom'; 
 
