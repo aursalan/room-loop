@@ -309,21 +309,59 @@ const roomStatusUpdateJob = cron.schedule('* * * * *', async () => { // Runs eve
 const server = http.createServer(app); // Create an HTTP server from your Express app
 const io = new Server(server, {
   cors: { // Configure CORS for Socket.IO connections (from your frontend)
-    origin: "http://localhost:5173", // Your React app's development URL
-    methods: ["GET", "POST"]
+    origin: "*", // Your React app's development URL
+    methods: ["GET", "POST", "PUT"]
   }
 });
 
 io.on('connection', (socket) => {
   console.log('A client connected!', socket.id);
 
+
+  // --- NEW: Handle joining a Socket.IO room ---
+  socket.on('join_room', (roomId) => {
+    socket.join(roomId);
+    console.log(`Socket.IO: Client ${socket.id} joined room: ${roomId}`);
+  });
+  // ------------------------------------------
+
+  // --- NEW: Handle chat messages ---
+  socket.on('chat:message', (payload) => {
+    const { roomId, content, senderUsername } = payload;
+
+    // Basic validation (for MVP)
+    if (!roomId || !content || !senderUsername) {
+      console.warn('Socket.IO: Invalid chat message payload received.');
+      return;
+    }
+
+    // --- IMPORTANT: For MVP, we ASSUME the sender is authenticated and in the room
+    // For production, you'd verify JWT on socket connection and check if user is in roomId's participant list
+
+    // Prepare message data
+    const messageData = {
+      roomId,
+      senderUsername,
+      content,
+      timestamp: new Date().toISOString(), // Server-side timestamp
+      // messageId: Math.random().toString(36).substring(2, 9), // Simple ID for uniqueness
+    };
+
+    // Broadcast message to all clients IN THAT SPECIFIC ROOM
+    io.to(roomId).emit('chat:message_received', messageData);
+    console.log(`Socket.IO: Message "${content}" from ${senderUsername} broadcast to room ${roomId}`);
+  });
+  // -------------------------------
+
   socket.on('disconnect', () => {
-    console.log('Client disconnected!', socket.id);
+    console.log('Socket.IO: Client disconnected!', socket.id);
+    // --- NEW: Optional: Handle leaving Socket.IO rooms on disconnect (more complex for MVP) ---
+    // You might iterate through rooms socket.rooms and remove, or just let it handle by itself.
   });
 
-  // You'll add more real-time logic here later
+  // You'll add more real-time logic here later (e.g., room:participant_updated from join API)
 });
-// ------------------------------------------
+// ----------------------------------------------------
 
 // --- Join Room API (via access code) ---
 app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
