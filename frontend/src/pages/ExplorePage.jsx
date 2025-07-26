@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext'; // To get the token
 import { getRoomStatus, formatDisplayTime } from '../utils/dateTimeHelpers'; // For status and time display
+import { useNavigate } from 'react-router-dom'; // --- NEW: Import useNavigate
 
 function ExplorePage() {
   const { token, isLoggedIn } = useAuth(); // Need token for API call
+  const navigate = useNavigate(); // Initialize useNavigate
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -145,7 +147,26 @@ function ExplorePage() {
               </span></p>
               <p style={{ fontSize: '0.85em', color: '#888' }}>Starts: {formatDisplayTime(room.start_time)}</p>
               <p style={{ fontSize: '0.85em', color: '#888' }}>Ends: {formatDisplayTime(room.end_time)}</p>
-              {/* You could add a button to join this room here later */}
+
+              {/* --- NEW: Join Room Button --- */}
+              {getRoomStatus(room.start_time, room.end_time) === 'live' && room.access_code ? ( // Only show if live, open, AND has an access_code
+                  <button
+                    onClick={() => navigate(`/room/${room.access_code}`)} // Navigate to RoomPage with access_code
+                    style={{
+                      marginTop: '15px', padding: '8px 12px', backgroundColor: '#007bff', color: 'white',
+                      border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.9em', width: '100%'
+                    }}
+                  >
+                    Join Room
+                  </button>
+                ) : (
+                  <p style={{ marginTop: '15px', fontSize: '0.8em', color: '#888' }}>
+                    {roomCurrentStatus === 'closed' ? 'Room Closed' :
+                     roomCurrentStatus === 'scheduled' ? 'Scheduled' :
+                     (room.max_participants && room.current_active_participants >= room.max_participants) ? 'Room Full' : ''}
+                  </p>
+                )}
+                {/* --------------------------- */}
             </div>
           ))}
         </div>
