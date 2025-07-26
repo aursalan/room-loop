@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken'); // Import jsonwebtoken
 const cron = require('node-cron'); // Import node-cron
 const http = require('http'); // Import http module
 const { Server } = require('socket.io'); // Import Server from socket.io
+const cors = require('cors');
 
 // --- User-defined utility to generate unique codes (optional, put in separate file later) ---
 function generateAccessCode() {
@@ -18,6 +19,10 @@ function generateAccessCode() {
 const app = express();
 const port = 3001;
 
+
+const FRONTEND_URL_PROD = process.env.FRONTEND_URL || 'http://localhost:5173';
+console.log('CORS origin set to:', FRONTEND_URL_PROD);
+app.use(cors({ origin: '*' }));
 app.use(express.json()); // Middleware to parse JSON request bodies
 
 // --- PostgreSQL connection pool configuration ---
@@ -306,14 +311,8 @@ const roomStatusUpdateJob = cron.schedule('* * * * *', async () => { // Runs eve
 // ------------------------------------
 
 // --- Create HTTP server and Socket.IO server ---
-const FRONTEND_URL_PROD = process.env.FRONTEND_URL || 'http://localhost:5173';
-
-app.use(cors({
-  origin: FRONTEND_URL_PROD, // This will now correctly pick up the Render frontend URL
-  credentials: true
-}));
-
 const server = http.createServer(app); // Create an HTTP server from your Express app
+
 const io = new Server(server, {
   cors: { // Configure CORS for Socket.IO connections (from your frontend)
     origin: FRONTEND_URL_PROD, // Your React app's development URL
