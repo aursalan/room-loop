@@ -225,6 +225,38 @@ const handleSendMessage = () => {
     }
   };
 
+  // --- NEW: Function to handle leaving the room ---
+  const handleLeaveRoom = async () => {
+    if (!roomData?.id || !token) {
+      setError('Cannot leave: Room data or authentication token missing.');
+      return;
+    }
+    try {
+      // Make API call to backend's leave room endpoint
+      const response = await fetch(`/api/rooms/${roomData.id}/leave`, {
+        method: 'POST', // Or DELETE, depending on what you implemented
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to leave room.');
+      }
+
+      console.log(`Successfully left room: ${roomData.name}`);
+      // On success, navigate back to dashboard
+      navigate('/dashboard', { replace: true });
+
+    } catch (err) {
+      console.error('Error leaving room:', err);
+      setError(err.message || 'Could not leave room. Please try again.');
+    }
+  };
+  // ---------------------------------------------
+
   // Display the room details if data is available
   return (
     <div style={{ maxWidth: '800px', margin: '50px auto', padding: '30px', border: '1px solid #007bff', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
@@ -262,6 +294,21 @@ const handleSendMessage = () => {
         {copyMessage && <p style={{ marginTop: '10px', color: copyMessage.includes('copied') ? 'green' : 'red' }}>{copyMessage}</p>}
       </div>
       {/* ------------------------------- */}
+
+      {/* --- NEW: Leave Room Button --- */}
+      <div style={{ textAlign: 'center', marginTop: '20px', marginBottom: '30px' }}>
+        <button
+          onClick={handleLeaveRoom}
+          style={{
+            padding: '10px 20px', backgroundColor: '#e9637e', color: 'white', // A softer red for leave
+            border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '1em'
+          }}
+          disabled={loading || error || !roomData} // Disable if room data not loaded
+        >
+          Leave Room
+        </button>
+      </div>
+      {/* --------------------------- */}
 
       <h3>Who's in the room:</h3>
       {participants.length > 0 ? (
