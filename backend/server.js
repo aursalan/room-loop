@@ -483,6 +483,65 @@ app.post('/api/rooms/:accessCode/join', authenticateToken, async (req, res) => {
 });
 // ------------------------------------------
 
+// ---Leave Room API ---
+app.post('/api/rooms/:roomId/leave', authenticateToken, async (req, res) => {
+  const { roomId } = req.params;
+  const userId = req.user.id;
+  const userUsername = req.user.username; // From JWT payload
+
+  try {
+    // 1. Check if the user is an active participant in this room
+    const participantCheck = await pool.query(
+      `SELECT * FROM room_participants WHERE room_id = $1 AND user_id = $2 AND left_at IS NULL`,
+      [roomId, userId]
+    );
+
+    if (participantCheck.rows.length === 0) {
+      return res.status(404).json({ message: 'You are not an active participant in this room.' });
+    }
+
+    // 2. Remove the participant (simple DELETE for MVP)
+    await pool.query(
+      `DELETE FROM room_participants WHERE room_id = $1 AND user_id = $2`,
+      [roomId, userId]
+    );
+    // Note: For a re-joinable system, you'd UPDATE left_at=NOW() instead of DELETE.
+
+    // 3. Fetch updated active participant list for broadcast and response
+    const currentParticipantsData = await pool.query(
+      `SELECT rp.user_id, u.username
+       FROM room_participants rp
+       JOIN users u ON rp.user_id = u.id
+       WHERE rp.room_id = $1 AND rp.left_at IS NULL`,
+      [roomId]
+    );
+    const currentActiveParticipantsList = currentParticipantsData.rows;
+    const updatedParticipantCount = currentActiveParticipantsList.length;
+
+    // 4. Emit Socket.IO event to broadcast the update
+    if (io) { // Ensure io instance exists
+      io.to(roomId).emit('room:participant_updated', { // Use io.to(roomId) for specific room broadcast
+        roomId: roomId,
+        userId: userId, // User who just left
+        username: userUsername, // User who just left
+        action: 'left',
+        newParticipantCount: updatedParticipantCount,
+        newParticipantList: currentActiveParticipantsList,
+      });
+      console.log(`Socket.IO: Emitted 'room:participant_updated' for room ${roomId} (Left: ${userUsername})`);
+    } else {
+      console.warn('Socket.IO instance (io) not available for broadcast in Leave Room API.');
+    }
+
+    res.status(200).json({ message: 'Successfully left the room.' });
+
+  } catch (error) {
+    console.error('Error leaving room:', error.stack);
+    res.status(500).json({ message: 'Server error during leaving room.' });
+  }
+});
+// ------------------------------------
+
 // --- List Public Rooms API (WITH TAG & STATUS FILTERS - Consolidated Code) ---
 app.get('/api/rooms/public', authenticateToken, async (req, res) => {
   try {
