@@ -306,10 +306,17 @@ const roomStatusUpdateJob = cron.schedule('* * * * *', async () => { // Runs eve
 // ------------------------------------
 
 // --- Create HTTP server and Socket.IO server ---
+const FRONTEND_URL_PROD = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+app.use(cors({
+  origin: FRONTEND_URL_PROD, // This will now correctly pick up the Render frontend URL
+  credentials: true
+}));
+
 const server = http.createServer(app); // Create an HTTP server from your Express app
 const io = new Server(server, {
   cors: { // Configure CORS for Socket.IO connections (from your frontend)
-    origin: "*", // Your React app's development URL
+    origin: FRONTEND_URL_PROD, // Your React app's development URL
     methods: ["GET", "POST", "PUT"]
   }
 });
