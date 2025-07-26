@@ -16,6 +16,12 @@ function RoomPage() {
   const [error, setError] = useState(null);
   const [participants, setParticipants] = useState([]);
 
+   // --- States for Chat ---
+   const [messages, setMessages] = useState([]);
+   const [messageInput, setMessageInput] = useState('');
+   const chatLogRef = useRef(null); // Ref for scrolling chat log
+   // --------------------------
+
   const hasFetchedRoom = useRef(false);
 
   // --- Function to handle joining the room ---
@@ -92,35 +98,106 @@ function RoomPage() {
       // Cleanup for StrictMode for this particular pattern:
       // Reset hasFetchedRoom.current when the component unmounts for development purposes,
       // so that if it remounts (e.g., in StrictMode), it tries to fetch again.
-      hasFetchedRoom.current = false;
+      // hasFetchedRoom.current = false;
       // You could also add specific cleanup for socket listeners if they were defined inside this effect
     };
   }, [accessCode, token, isLoggedIn, navigate, user, isLoadingAuth]); // Add isLoadingAuth dependency
 
 
-  // --- Effect to listen for real-time updates (similar to JoinRoomForm) ---
+  // --- NEW: Single Consolidated useEffect for ALL Socket.IO Management and Listeners ---
+  // This handles:
+  // 1. Emitting 'join_room' to backend
+  // 2. Listening for 'chat:message_received'
+  // 3. Listening for 'room:participant_updated'
+  // 4. Proper cleanup for all listeners
   useEffect(() => {
-    if (!socket || !roomData) return;
+    // --- NEW LOGS (for debugging this useEffect's flow) ---
+    console.log('RoomPage useEffect (Socket.IO Consolidated): Triggered.');
+    console.log('  Dependencies:', {
+        socketReady: !!socket,
+        roomDataId: roomData?.id,
+        userUsername: user?.username
+    });
+    // ----------------
 
+    // Ensure socket, roomData (with its ID), and current user's username are available
+    if (!socket || !roomData?.id || !user?.username) {
+      console.log("RoomPage useEffect (Socket.IO Consolidated): Conditions not met. Skipping Socket.IO setup.");
+      return;
+    }
+
+    const socketRoomId = roomData.id;
+    const currentUserUsername = user.username;
+
+    // 1. Emit 'join_room' event to backend (to subscribe this client's socket to a specific room)
+    console.log(`RoomPage useEffect (Socket.IO Consolidated): Emitting 'join_room' for room: ${socketRoomId} for user ${currentUserUsername}`);
+    socket.emit('join_room', socketRoomId);
+
+    // 2. Listen for incoming chat messages
+    const handleChatMessageReceived = (message) => {
+      console.log('RoomPage useEffect (Socket.IO Consolidated): RECEIVED chat message:', message);
+      setMessages(prevMessages => [...prevMessages, message]);
+    };
+    socket.on('chat:message_received', handleChatMessageReceived);
+
+    // 3. Listen for real-time participant updates (moved here from previous separate useEffect)
     const handleParticipantUpdate = (data) => {
       if (data.roomId === roomData.id) {
-        console.log(`Real-time update for room ${roomData.name}: ${data.newParticipantCount} participants.`);
+        console.log(`RoomPage useEffect (Socket.IO Consolidated): Real-time update for room ${roomData.name}: ${data.newParticipantCount} participants.`);
         setRoomData(prevData => ({
           ...prevData,
           current_participants: data.newParticipantCount,
         }));
         setParticipants(data.newParticipantList);
-        // Optionally, display a transient message about who joined/left
-        // setMessage(`Participant update: ${data.username} ${data.action}! New count: ${data.newParticipantCount}`);
       }
     };
-
     socket.on('room:participant_updated', handleParticipantUpdate);
 
+    // Cleanup function for this consolidated effect
     return () => {
-      socket.off('room:participant_updated', handleParticipantUpdate);
+      console.log(`RoomPage useEffect (Socket.IO Consolidated): Cleaning up listeners and leaving room: ${socketRoomId}`);
+      socket.off('chat:message_received', handleChatMessageReceived); // Detach chat listener
+      socket.off('room:participant_updated', handleParticipantUpdate); // Detach participant listener
+      // Optional: socket.emit('leave_room', socketRoomId); if backend implements it
     };
-  }, [socket, roomData]);
+  }, [socket, roomData, user]); // Depend on 'socket', 'roomData', and 'user'
+
+  // --- NEW: Effect to scroll chat log to bottom ---
+useEffect(() => {
+  if (chatLogRef.current) {
+    chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
+  }
+}, [messages]); // Scroll whenever messages change
+// ----------------------------------------------
+
+// --- NEW: Function to handle sending messages ---
+const handleSendMessage = () => {
+  // --- NEW: LOG PRE-CONDITIONS VERY CAREFULLY ---
+  console.log('--- handleSendMessage called ---');
+  console.log('Socket status:', socket ? 'Connected' : 'Disconnected');
+  console.log('RoomData presence:', !!roomData);
+  console.log('Message input (trimmed):', messageInput.trim());
+  console.log('User username presence:', !!user?.username);
+  // ------------------------------------------
+
+  if (!socket?.connected || !roomData?.id || !messageInput.trim() || !user?.username) {
+    console.warn('Cannot send message: Socket not connected, room data missing, or empty message/username.');
+    return;
+  }
+
+  const messagePayload = {
+    roomId: roomData.id,
+    content: messageInput,
+    senderUsername: user.username, // Get username from AuthContext
+    // You could add userId: user.id here for backend if needed
+  };
+
+  console.log('FE Chat: Emitting "chat:message" to backend with payload:', messagePayload); // LOG THE SENT PAYLOAD
+  socket.emit('chat:message', messagePayload);
+  setMessageInput(''); // Clear input after sending
+  console.log('--- handleSendMessage finished emitting ---');
+};
+// ---------------------------------------------
 
   // --- Render Logic ---
   if (loading) {
@@ -202,6 +279,62 @@ function RoomPage() {
       ) : (
         <p style={{textAlign: 'center', color: '#666'}}>No participants yet. Be the first!</p>
       )}
+
+      {/* --- NEW: Chat Interface --- */}
+      <h3>Room Chat</h3>
+      <div
+        ref={chatLogRef} // Attach ref for scrolling
+        style={{
+          height: '300px',
+          border: '1px solid #ccc',
+          borderRadius: '8px',
+          padding: '10px',
+          overflowY: 'scroll', // Make it scrollable
+          display: 'flex',
+          flexDirection: 'column',
+          marginBottom: '10px',
+          backgroundColor: '#f9f9f9',
+        }}
+      >
+        {messages.length > 0 ? (
+          messages.map((msg, index) => (
+            <div key={index} style={{ marginBottom: '8px', alignSelf: msg.senderUsername === user?.username ? 'flex-end' : 'flex-start', maxWidth: '80%', padding: '8px', borderRadius: '10px', backgroundColor: msg.senderUsername === user?.username ? '#dcf8c6' : '#e0e0e0' }}>
+              <span style={{ fontWeight: 'bold', color: msg.senderUsername === user?.username ? '#128c7e' : '#555', marginRight: '5px' }}>
+                {msg.senderUsername === user?.username ? 'You' : msg.senderUsername}:
+              </span>
+              <span>{msg.content}</span>
+              <span style={{ fontSize: '0.7em', color: '#888', marginLeft: '5px' }}>
+                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          ))
+        ) : (
+          <p style={{ textAlign: 'center', color: '#888' }}>No messages yet. Start chatting!</p>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <input
+          type="text"
+          value={messageInput}
+          onChange={(e) => setMessageInput(e.target.value)}
+          onKeyPress={(e) => { // Handle Enter key press
+            if (e.key === 'Enter') {
+              handleSendMessage();
+            }
+          }}
+          placeholder="Type your message..."
+          style={{ flexGrow: 1, padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+          disabled={!socket || !roomData || !user?.username} // Disable if not connected or not in room or user is null
+        />
+        <button
+          onClick={handleSendMessage}
+          style={{ padding: '10px 15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+          disabled={!socket || !roomData || !messageInput.trim() || !user?.username} // Disable if no text or no connection
+        >
+          Send
+        </button>
+      </div>
+      {/* --------------------------- */}
       
     </div>
   );
