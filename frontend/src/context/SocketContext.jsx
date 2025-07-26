@@ -9,7 +9,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:3001'); // Connect to your backend's Socket.IO server
+    const newSocket = io(import.meta.env.VITE_API_BASE_URL); // Connect to your backend's Socket.IO server
 
     newSocket.on('connect', () => {
       console.log('Socket.IO Connected (from SocketContext)! Client ID:', newSocket.id);

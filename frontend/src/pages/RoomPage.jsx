@@ -36,7 +36,7 @@ function RoomPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/rooms/${code}/join`, {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + `/api/rooms/${code}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -233,7 +233,7 @@ const handleSendMessage = () => {
     }
     try {
       // Make API call to backend's leave room endpoint
-      const response = await fetch(`/api/rooms/${roomData.id}/leave`, {
+      const response = await fetch(import.meta.env.VITE_API_BASE_URL + `/api/rooms/${roomData.id}/leave`, {
         method: 'POST', // Or DELETE, depending on what you implemented
         headers: {
           'Content-Type': 'application/json',

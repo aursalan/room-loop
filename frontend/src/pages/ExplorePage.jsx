@@ -39,7 +39,7 @@ function ExplorePage() {
         const url = `/api/rooms/public?${queryParams.toString()}`;
         // ----------------------------------------------------
 
-        const response = await fetch(url, { // Use the constructed URL
+        const response = await fetch(import.meta.env.VITE_API_BASE_URL + url, { // Use the constructed URL
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,

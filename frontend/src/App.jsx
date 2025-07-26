@@ -4,8 +4,8 @@ import { useAuth } from './context/AuthContext';
 import './App.css';
 
 // --- Import authentication forms ---
-import LoginForm from './components/Auth/LoginForm';
-import RegistrationForm from './components/Auth/RegistrationForm';
+import LoginForm from './components/auth/LoginForm';
+import RegistrationForm from './components/auth/RegistrationForm';
 
 // --- Import dashboard ---
 import Dashboard from './pages/Dashboard'; 

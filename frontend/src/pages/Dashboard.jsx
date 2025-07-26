@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react'; // --- NEW: Import useRef
 import { useAuth } from '../context/AuthContext'; // Ensure useAuth is imported
 // Ensure these import paths are correct based on your file structure:
-import RoomCreationForm from '../components/Room/RoomCreationForm'; // Corrected path
-import JoinRoomForm from '../components/Room/JoinRoomForm'; // Corrected path
+import RoomCreationForm from '../components/rroom/RoomCreationForm'; // Corrected path
+import JoinRoomForm from '../components/room/JoinRoomForm'; // Corrected path
 import { Link, useNavigate } from 'react-router-dom'; 
 
 function Dashboard() {
@@ -36,7 +36,7 @@ function Dashboard() {
         // Console log for debugging the fetch initiation (can remove after verification)
         console.log('Dashboard: Attempting to fetch user profile...'); 
 
-        const response = await fetch('/api/users/me', {
+        const response = await fetch(import.meta.env.VITE_API_BASE_URL + '/api/users/me', {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${authToken}`, // Use argument token
