@@ -14,6 +14,8 @@ import RoomPage from './pages/RoomPage'; // --- Import RoomPage
 
 import ExplorePage from './pages/ExplorePage';
 
+import HomePage from './pages/HomePage';
+
 import {Navbar,NavbarBrand, Button} from "@heroui/react";
 
 // --- ProtectedRoute Component ---
@@ -42,7 +44,7 @@ function App() {
   return (
     <div className="App">
       {/* Header remains, displaying login status */}
-      <Navbar style={{ padding: '20px', borderBottom: '1px solid #eee', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Navbar>
         <NavbarBrand><p className="font-bold text-inherit">roomloop</p></NavbarBrand>
         {isLoggedIn ? (
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -56,6 +58,9 @@ function App() {
 
       <main>
         <Routes> {/* --- Define routes here --- */}
+          
+          <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <HomePage />} />
+
           {/* Public routes */}
           <Route path="/login" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <LoginForm />} />
           <Route path="/register" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <RegistrationForm />} />
