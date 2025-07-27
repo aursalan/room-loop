@@ -14,6 +14,8 @@ import RoomPage from './pages/RoomPage'; // --- Import RoomPage
 
 import ExplorePage from './pages/ExplorePage';
 
+import {Navbar,NavbarBrand, Button} from "@heroui/react";
+
 // --- ProtectedRoute Component ---
 function ProtectedRoute({ children }) {
   const { isLoggedIn, isLoadingAuth } = useAuth();
@@ -40,17 +42,17 @@ function App() {
   return (
     <div className="App">
       {/* Header remains, displaying login status */}
-      <header style={{ padding: '20px', borderBottom: '1px solid #eee', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3>roomloop</h3>
+      <Navbar style={{ padding: '20px', borderBottom: '1px solid #eee', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <NavbarBrand><p className="font-bold text-inherit">roomloop</p></NavbarBrand>
         {isLoggedIn ? (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '10px' }}>Logged in as <strong>{user?.username}</strong></span>
-            <button onClick={logout} style={{ padding: '8px 12px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Logout</button>
+            <Button onPress={logout} color="danger" radius="lg" variant="shadow">Logout</Button>
           </div>
         ) : (
           <span>Not Logged In</span>
         )}
-      </header>
+      </Navbar>
 
       <main>
         <Routes> {/* --- Define routes here --- */}
