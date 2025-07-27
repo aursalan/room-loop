@@ -30,9 +30,10 @@ import {
   Link as HeroLink,
   NavbarMenu,
   NavbarMenuItem,
-  NavbarMenuToggle
+  NavbarMenuToggle,
+  Chip
 } from "@heroui/react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 
 // --- ProtectedRoute Component ---
 function ProtectedRoute({ children }) {
@@ -70,41 +71,34 @@ function App() {
 
   {/* Center: Brand (Mobile only) */}
   <div className="sm:hidden flex justify-center items-center w-1/3">
-    <p className="font-bold text-inherit text-xl">roomloop</p>
-  </div>
+  <img 
+    src="/owl.png" 
+    alt="RoomLoop Logo" 
+    className="h-13 object-contain"
+  />
+</div>
 
   {/* Right: Avatar (Mobile only) */}
   <NavbarContent className="sm:hidden w-1/3 justify-end" justify="end">
-    <Dropdown placement="bottom-end">
-      <DropdownTrigger>
-        <User
-          as="button"
-          name={isLoggedIn ? user?.username : "User"}
-          className="transition-transform"
-          avatarProps={{
-            src: "",
-          }}
-        />
-      </DropdownTrigger>
-      <DropdownMenu aria-label="User Menu" variant="flat" className="w-40">
-        {isLoggedIn && (
-          <DropdownItem
-            key="logout"
-            className="text-danger"
-            color="danger"
-            onPress={logout}
-          >
-            Logout
-          </DropdownItem>
-        )}
-      </DropdownMenu>
-    </Dropdown>
-  </NavbarContent>
+  {isLoggedIn && (
+  <button
+    onClick={logout}
+    className="p-2 rounded-full hover:bg-red-100 text-red-500 transition"
+    aria-label="Logout"
+  >
+    <LogOut className="w-5 h-5" />
+  </button>
+)}
+</NavbarContent>
 
   {/* Full Navbar Content for desktop */}
   <NavbarContent className="hidden sm:flex" justify="start">
     <NavbarBrand>
-      <p className="font-bold text-inherit text-xl">roomloop</p>
+    <img 
+    src="/owl.png" 
+    alt="RoomLoop Logo" 
+    className="h-13 object-contain"
+  />
     </NavbarBrand>
   </NavbarContent>
 
@@ -147,31 +141,16 @@ function App() {
   </NavbarContent>
 
   <NavbarContent className="hidden sm:flex" justify="end">
-    <Dropdown placement="bottom-end">
-      <DropdownTrigger>
-        <User
-          as="button"
-          name={isLoggedIn ? user?.username : "User"}
-          className="transition-transform"
-          avatarProps={{
-            src: "",
-          }}
-        />
-      </DropdownTrigger>
-      <DropdownMenu aria-label="User Menu" variant="flat" className="w-40">
-        {isLoggedIn && (
-          <DropdownItem
-            key="logout"
-            className="text-danger"
-            color="danger"
-            onPress={logout}
-          >
-            Logout
-          </DropdownItem>
-        )}
-      </DropdownMenu>
-    </Dropdown>
-  </NavbarContent>
+  {isLoggedIn && (
+  <button
+    onClick={logout}
+    className="p-2 rounded-full hover:bg-red-100 text-red-500 transition"
+    aria-label="Logout"
+  >
+    <LogOut className="w-5 h-5" />
+  </button>
+)}
+</NavbarContent>
 
   {/* Mobile Menu */}
   <NavbarMenu className="mt-16">

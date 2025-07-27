@@ -70,7 +70,7 @@ function LoginForm() {
           labelPlacement="outside" 
           type="text"
           id="email-or-username"
-          placeholder='Enter you email or username'
+          placeholder='Enter your email or username'
           value={emailOrUsername}
           onChange={(e) => setEmailOrUsername(e.target.value)}
           
