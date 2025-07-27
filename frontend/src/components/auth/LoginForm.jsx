@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext'; // Import useAuth
 import { useNavigate } from 'react-router-dom'; // --- NEW: Import useNavigate
 
+import {Form, Input, Button} from "@heroui/react";
+
 // Helper function to validate email format (basic regex)
 const isValidEmail = (input) => {
   // Very basic email regex, for more robust validation consider external libraries
@@ -61,39 +63,36 @@ function LoginForm() {
   return (
     <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
       <h2>Login to Roomloop</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="email-or-username" style={{ display: 'block', marginBottom: '5px' }}>Email or Username:</label>
-          <input
-            type="text" // Changed type to 'text' for flexibility
-            id="email-or-username"
-            value={emailOrUsername}
-            onChange={(e) => setEmailOrUsername(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+      <Form onSubmit={handleSubmit} className='items-center'>
+          <Input
+          isRequired
+          label="Username"
+          labelPlacement="outside" 
+          type="text"
+          id="email-or-username"
+          placeholder='Enter you email or username'
+          value={emailOrUsername}
+          onChange={(e) => setEmailOrUsername(e.target.value)}
+          
           />
-        </div>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="login-password" style={{ display: 'block', marginBottom: '5px' }}>Password:</label>
-          <input
-            type="password"
-            id="login-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+          <Input
+          isRequired
+          label="Password"
+          labelPlacement="outside"
+          type="password"
+          id="login-password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
-        <button
+          <Button
           type="submit"
-          style={{
-            width: '100%', padding: '10px', backgroundColor: '#28a745', color: 'white',
-            border: 'none', borderRadius: '4px', cursor: 'pointer'
-          }}
-        >
+          variant="shadow"
+          color="primary"
+          >
           Login
-        </button>
-      </form>
+          </Button>
+      </Form>
       {message && <p style={{ marginTop: '15px', color: message.includes('successful') ? 'green' : 'red' }}>{message}</p>}
       {/* --- NEW: Link to Registration Page --- */}
       <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9em' }}>
