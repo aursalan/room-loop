@@ -41,7 +41,7 @@ function App() {
     <div className="App">
       {/* Header remains, displaying login status */}
       <header style={{ padding: '20px', borderBottom: '1px solid #eee', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Roomloop</h1>
+        <h3>roomloop</h3>
         {isLoggedIn ? (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: '10px' }}>Logged in as <strong>{user?.username}</strong></span>
