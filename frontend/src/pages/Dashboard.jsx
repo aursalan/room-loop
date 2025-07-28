@@ -6,6 +6,7 @@ import RoomCreationForm from '../components/room/RoomCreationForm';
 import JoinRoomForm from '../components/room/JoinRoomForm';
 import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button } from "@heroui/react";
 import { Link } from 'react-router-dom';
+import { Typewriter } from 'react-simple-typewriter';
 
 function Dashboard() {
   const { user, logout, token, isLoadingAuth } = useAuth();
@@ -98,7 +99,13 @@ function Dashboard() {
         <Divider />
         <CardBody className="flex-grow">
           <p className="text-sm text-gray-700">
-            Welcome to your Room Loop Dashboard – your space to create, connect, and collaborate.
+          <Typewriter
+            words={["Hey there, RoomLooper! This is your space to explore rooms, join live discussions, and build your event footprint. Update your profile, check your invites, or start your own room — all from here. Let's make some noise 🔊"]}
+            loop={1}
+            cursor
+            cursorStyle="."
+            typeSpeed={85}
+          />
           </p>
         </CardBody>
         <Divider />

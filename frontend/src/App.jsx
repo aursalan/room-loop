@@ -60,7 +60,7 @@ function App() {
   // -------------------------------------------
 
   return (
-    <div className="App" >
+    <div className="App bg-[#F5F5F7] " >
 <Navbar onMenuOpenChange={setIsMenuOpen} isBordered shouldHideOnScroll className="h-10 px-4 sm:px-12 backdrop-blur-md bg-white/80" style={{ backgroundColor: '#F5F5F7' }}>
   {/* Left: Hamburger (Mobile only) */}
   <NavbarContent className="sm:hidden w-1/3 h-2" justify="start">

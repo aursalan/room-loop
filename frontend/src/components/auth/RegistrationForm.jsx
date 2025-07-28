@@ -46,7 +46,7 @@ function RegistrationForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-white font-sans">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-white font-sans" style={{ backgroundColor: '#F5F5F7' }}>
     <div className="w-full max-w-md sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-3xl shadow-md border border-gray-200 bg-white p-10 text-center font-normal min-h-[550px]">
     <img
     src="/infinity.png" // Make sure the file exists at public/logo.png
@@ -57,6 +57,7 @@ function RegistrationForm() {
       <Form onSubmit={handleSubmit} className='items-center'>
           <Input
             label="Email Address"
+            variant="bordered"
             type="email"
             id="email"
             value={email}
@@ -66,6 +67,7 @@ function RegistrationForm() {
           />
           <Input
             label="Username"
+            variant="bordered"
             type="text"
             id="username"
             value={username}
@@ -75,6 +77,7 @@ function RegistrationForm() {
           />
           <Input
             label="Password"
+            variant="bordered"
             type="password"
             id="password"
             value={password}

@@ -41,14 +41,14 @@ function JoinRoomForm() {
             onChange={(e) => setAccessCode(e.target.value)}
             placeholder="Enter access code"
             size="sm"
-            radius="lg"
+            radius="sm"
             className="mb-3 text-black"
             classNames={{ inputWrapper: "bg-white/60 backdrop-blur-sm" }}
           />
 
           <Button
             type="submit"
-            className="text-xs text-white bg-black/30 w-full"
+            className="text-xs text-white bg-black/30"
             color="default"
             radius="lg"
             size="sm"

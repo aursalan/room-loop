@@ -61,7 +61,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-white font-sans">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-white font-sans" style={{ backgroundColor: '#F5F5F7' }}>
     <div className="w-full max-w-md sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-3xl shadow-md border border-gray-200 bg-white p-10 text-center font-normal min-h-[550px]">
     <img
     src="/infinity.png" // Make sure the file exists at public/logo.png
@@ -74,6 +74,7 @@ function LoginForm() {
           isRequired
           label="Email or Username"
           type="text"
+          variant="bordered"
           id="email-or-username"
           value={emailOrUsername}
           onChange={(e) => setEmailOrUsername(e.target.value)}
@@ -84,6 +85,7 @@ function LoginForm() {
           isRequired
           label="Password"
           type="password"
+          variant="bordered"
           id="login-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -102,7 +104,7 @@ function LoginForm() {
       </Form>
       {message && <p style={{ marginTop: '15px', color: message.includes('successful') ? 'green' : 'red' }}>{message}</p>}
       {/* --- NEW: Link to Registration Page --- */}
-      <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9em' }}>
+      <p style={{ textAlign: 'center', color: 'black', marginTop: '20px', fontSize: '0.9em' }}>
         Don't have an account? <a href="#" onClick={() => navigate('/register')} style={{ color: '#007bff', textDecoration: 'none' }}>Register here</a>
       </p>
       {/* ------------------------------------- */}

@@ -6,7 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 
 function HomePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-white font-sans">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-white font-sans" style={{ backgroundColor: '#F5F5F7' }}>
       <Card className="max-w-3xl w-full rounded-3xl shadow-md border border-gray-200 bg-white p-10 text-center">
         
         <h1 className="text-3xl font-semibold mb-5 text-gray-900 tracking-tight leading-snug">
