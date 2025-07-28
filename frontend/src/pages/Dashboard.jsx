@@ -127,7 +127,7 @@ function Dashboard() {
     <img
       alt="Public Rooms"
       className="object-cover w-full h-full absolute top-0 left-0 z-0"
-      src="https://heroui.com/images/hero-card.jpeg"
+      src="open.jpg"
     />
   </div>
 

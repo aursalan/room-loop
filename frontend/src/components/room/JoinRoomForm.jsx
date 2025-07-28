@@ -28,7 +28,12 @@ function JoinRoomForm() {
 
   return (
     <Card isFooterBlurred className="w-[260px] h-[340px] relative overflow-hidden border-none" radius="lg">
-      <div className="absolute top-0 left-0 z-0 w-full h-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" />
+      <div className="absolute top-0 left-0 z-0 w-full h-full" />
+        <img
+        alt="Public Rooms"
+        className="object-cover w-full h-full absolute top-0 left-0 z-0"
+        src="private.jpg"
+      />
 
       <CardFooter className="z-10 absolute bottom-0 left-0 right-0 bg-black/40 backdrop-blur-md text-white p-4 rounded-b-lg">
         <form onSubmit={handleSubmit} className="w-full">
