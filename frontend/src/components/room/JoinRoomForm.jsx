@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardFooter, Button, Input } from '@heroui/react';
 
 function JoinRoomForm() {
   const { user } = useAuth();
@@ -20,42 +21,51 @@ function JoinRoomForm() {
       return;
     }
 
-    // --- Core Logic: Simply navigate to the RoomPage URL ---
-    // The RoomPage will then handle the API call and display.
     navigate(`/room/${accessCode}`);
-    setAccessCode(''); // Clear input
-    setMessage('Attempting to join room...'); // Provide immediate feedback
+    setAccessCode('');
+    setMessage('Attempting to join room...');
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>Join a Room</h2>
-      {user && <p style={{ textAlign: 'center', color: '#555' }}>Logged in as: {user.username}</p>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="accessCode" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Room Access Code:</label>
-          <input
+    <Card isFooterBlurred className="w-[260px] h-[340px] relative overflow-hidden border-none" radius="lg">
+      <div className="absolute top-0 left-0 z-0 w-full h-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500" />
+
+      <CardFooter className="z-10 absolute bottom-0 left-0 right-0 bg-black/40 backdrop-blur-md text-white p-4 rounded-b-lg">
+        <form onSubmit={handleSubmit} className="w-full">
+          <p className="text-sm mb-1">Join a Private Room</p>
+          {user && <p className="text-xs mb-2">@{user.username}</p>}
+
+          <Input
             type="text"
-            id="accessCode"
             value={accessCode}
             onChange={(e) => setAccessCode(e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+            placeholder="Enter access code"
+            size="sm"
+            radius="lg"
+            className="mb-3 text-black"
+            classNames={{ inputWrapper: "bg-white/60 backdrop-blur-sm" }}
           />
-        </div>
-        <button
-          type="submit"
-          style={{
-            width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white',
-            border: 'none', borderRadius: '4px', cursor: 'pointer'
-          }}
-        >
-          Join Room
-        </button>
-      </form>
-      {message && <p style={{ marginTop: '15px', color: message.includes('required') ? 'red' : 'green' }}>{message}</p>}
-    </div>
+
+          <Button
+            type="submit"
+            className="text-xs text-white bg-black/30 w-full"
+            color="default"
+            radius="lg"
+            size="sm"
+            variant="flat"
+          >
+            Join Room
+          </Button>
+
+          {message && (
+            <p className={`text-xs mt-2 ${message.includes('required') ? 'text-red-400' : 'text-green-400'}`}>
+              {message}
+            </p>
+          )}
+        </form>
+      </CardFooter>
+    </Card>
   );
-} // <<< --- THIS IS THE MISSING CURLY BRACE YOU NEED TO ADD --- <<<
+}
 
 export default JoinRoomForm;

@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import RoomCreationForm from '../components/room/RoomCreationForm';
 import JoinRoomForm from '../components/room/JoinRoomForm';
-import { Card, CardHeader, CardBody, CardFooter, Divider, Image } from "@heroui/react";
+import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button } from "@heroui/react";
+import { Link } from 'react-router-dom';
 
 function Dashboard() {
   const { user, logout, token, isLoadingAuth } = useAuth();
@@ -67,40 +68,88 @@ function Dashboard() {
   if (error) return <div className="text-center mt-10 text-red-500">{error}</div>;
 
   return (
-    <div className="flex flex-col items-center px-4 mt-10 space-y-8">
-      {profileData && (
-        <Card className="max-w-md w-full">
-          <CardHeader className="flex gap-3 items-center">
-            <Image
-              alt="User Icon"
-              height={40}
-              radius="sm"
-              src={iconSrc}
-              width={40}
-            />
-            <div className="flex flex-col">
-              <p className="text-md font-semibold">{profileData.username}</p>
-              <p className="text-sm text-default-500">{profileData.email}</p>
-            </div>
-          </CardHeader>
-          <Divider />
-          <CardBody>
-            <p className="text-sm text-gray-700">Welcome to your Room Loop Dashboard - your space to create, connect, and collaborate.</p>
-          </CardBody>
-          <Divider />
-          <CardFooter className="flex flex-col items-start">
-            <p className="text-xs text-default-500">Account Created: {new Date(profileData.created_at).toLocaleDateString()}</p>
-          </CardFooter>
-        </Card>
-      )}
+    <div className="mt-10 px-4">
+  {/* Headline Section */}
+  <div className="text-center mb-10">
+    <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900">
+      Dashboard.
+      <span className="font-normal text-gray-600"> Your portal to control and connect.</span>
+    </h1>
+  </div>
 
-      {/* These are OUTSIDE the card */}
-      <div className="w-full max-w-xl">
-        <RoomCreationForm />
-        <Divider className="my-6" />
-        <JoinRoomForm />
-      </div>
+  {/* Cards Section */}
+  <div className="flex flex-col md:flex-row justify-center items-center gap-10">
+    {/* Profile Card */}
+    {profileData && (
+      <Card className="w-[260px] h-[340px] flex flex-col justify-between">
+        <CardHeader className="flex gap-3 items-center">
+          <Image
+            alt="User Icon"
+            height={40}
+            radius="sm"
+            src={iconSrc}
+            width={40}
+          />
+          <div className="flex flex-col">
+            <p className="text-md font-semibold">{profileData.username}</p>
+            <p className="text-sm text-default-500">{profileData.email}</p>
+          </div>
+        </CardHeader>
+        <Divider />
+        <CardBody className="flex-grow">
+          <p className="text-sm text-gray-700">
+            Welcome to your Room Loop Dashboard – your space to create, connect, and collaborate.
+          </p>
+        </CardBody>
+        <Divider />
+        <CardFooter className="flex flex-col items-start">
+          <p className="text-xs text-default-500">
+            Account Created: {new Date(profileData.created_at).toLocaleDateString()}
+          </p>
+        </CardFooter>
+      </Card>
+    )}
+
+    {/* Public Room Card */}
+    <Card
+  isFooterBlurred
+  className="w-[260px] h-[340px] relative overflow-hidden border-none"
+  radius="lg"
+>
+  <div className="w-full h-full relative">
+    <img
+      alt="Public Rooms"
+      className="object-cover w-full h-full absolute top-0 left-0 z-0"
+      src="https://heroui.com/images/hero-card.jpeg"
+    />
+  </div>
+
+  <CardFooter
+    className="z-10 absolute bottom-0 left-0 right-0 bg-black/40 backdrop-blur-md text-white p-4 rounded-b-lg"
+  >
+    <div className="flex justify-between items-center w-full">
+      <p className="text-sm">Public Rooms</p>
+      <Link to="/explore">
+        <Button
+          className="text-xs text-white bg-black/30"
+          color="default"
+          radius="lg"
+          size="sm"
+          variant="flat"
+        >
+          Explore
+        </Button>
+      </Link>
     </div>
+  </CardFooter>
+</Card>
+<JoinRoomForm/>
+  </div>
+
+  <RoomCreationForm/>
+
+</div>
+
   );
 }
 
