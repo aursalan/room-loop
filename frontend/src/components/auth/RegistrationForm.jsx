@@ -46,49 +46,55 @@ function RegistrationForm() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>Register for Roomloop</h2>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-white font-sans">
+    <div className="w-full max-w-md sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl rounded-3xl shadow-md border border-gray-200 bg-white p-10 text-center font-normal min-h-[550px]">
+    <img
+    src="/infinity.png" // Make sure the file exists at public/logo.png
+    alt="RoomLoop Logo"
+    className="mx-auto mb-6 w-20 h-20 object-contain"
+  />
+      <h2 className="text-center leading-relaxed text-gray-700 font-normal">Register for Room Loop</h2>
       <Form onSubmit={handleSubmit} className='items-center'>
           <Input
-            label="Email"
-            labelPlacement="outside"
-            placeholder="Enter your email address"
+            label="Email Address"
             type="email"
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             isRequired
+            className='mt-5 h-12'
           />
           <Input
             label="Username"
-            labelPlacement="outside"
-            placeholder="Enter your username."
             type="text"
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             isRequired
+            className='mt-5 h-12'
           />
           <Input
             label="Password"
-            labelPlacement="outside"
-            placeholder="Enter your password."
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             isRequired
+            className='mt-5 h-12'
           />
         <Button
           type="submit"
-          variant="shadow"
-          color="success"
-          className='text-white'
+          variant="solid"
+          color="primary"
+          radius='sm'
+          size='sm'
+          className='mt-5'
         >
           Register
         </Button>
       </Form>
       {message && <p style={{ marginTop: '15px', color: message.includes('successful') ? 'green' : 'red' }}>{message}</p>}
+    </div>
     </div>
   );
 }
