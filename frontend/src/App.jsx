@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom'; // Import Routes, Route, Navigate
 import { useAuth } from './context/AuthContext';
-import './App.css';
 
 // --- Import authentication forms ---
 import LoginForm from './components/auth/LoginForm';
@@ -54,16 +53,17 @@ function ProtectedRoute({ children }) {
 function App() {
   const { isLoggedIn, user, logout, token, isLoadingAuth } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false); // Keeping these for the header display
+  const [isHovered, setIsHovered] = useState(false);
 
   // --- NEW LOG: App Component Render Trace ---
   console.log('App: Component Rendered/Re-rendered. Auth State:', { user: user?.username, token: token ? 'present' : 'null', isLoggedIn, isLoadingAuth });
   // -------------------------------------------
 
   return (
-    <div className="App">
-<Navbar onMenuOpenChange={setIsMenuOpen} isBordered shouldHideOnScroll>
+    <div className="App" >
+<Navbar onMenuOpenChange={setIsMenuOpen} isBordered shouldHideOnScroll className="h-10 px-4 sm:px-12 backdrop-blur-md bg-white/80" style={{ backgroundColor: '#F5F5F7' }}>
   {/* Left: Hamburger (Mobile only) */}
-  <NavbarContent className="sm:hidden w-1/3" justify="start">
+  <NavbarContent className="sm:hidden w-1/3 h-2" justify="start">
     <NavbarMenuToggle
       aria-label={isMenuOpen ? "Close menu" : "Open menu"}
     />
@@ -72,9 +72,9 @@ function App() {
   {/* Center: Brand (Mobile only) */}
   <div className="sm:hidden flex justify-center items-center w-1/3">
   <img 
-    src="/owl.png" 
+    src="/infinity.png" 
     alt="RoomLoop Logo" 
-    className="h-13 object-contain"
+    className="h-6 object-contain"
   />
 </div>
 
@@ -95,39 +95,43 @@ function App() {
   <NavbarContent className="hidden sm:flex" justify="start">
     <NavbarBrand>
     <img 
-    src="/owl.png" 
+    src="/infinity.png" 
     alt="RoomLoop Logo" 
-    className="h-13 object-contain"
+    className="h-6 object-contain"
   />
     </NavbarBrand>
   </NavbarContent>
 
   <NavbarContent className="hidden sm:flex" justify="center">
-    <Dropdown>
-      <DropdownTrigger>
-        <Button
-          variant="light"
-          className="text-md font-medium"
-          endContent={<ChevronDown className="h-4 w-4" />}
-        >
-          Features
-        </Button>
-      </DropdownTrigger>
-      <DropdownMenu aria-label="Features Menu" className="w-72">
-        <DropdownItem key="open-chat" description="Users can join rooms and chat freely.">
-          🗨️ Open Chat Rooms
-        </DropdownItem>
-        <DropdownItem key="public-rooms" description="Browse and explore public rooms.">
-          🌐 Explore Public Rooms
-        </DropdownItem>
-        <DropdownItem key="private-rooms" description="Create private rooms and share codes.">
-          🔐 Private Room with Code
-        </DropdownItem>
-        <DropdownItem key="coming-soon" className="text-gray-400 italic">
-          🚧 More features dropping soon...
-        </DropdownItem>
-      </DropdownMenu>
-    </Dropdown>
+  <div
+  onMouseEnter={() => setIsHovered(true)}
+  onMouseLeave={() => setIsHovered(false)}
+>
+  <Dropdown isOpen={isHovered}>
+    <DropdownTrigger>
+      <button
+        variant="light"
+        className="text-black font-medium size-sm"
+      >
+        Features
+      </button>
+    </DropdownTrigger>
+    <DropdownMenu aria-label="Features Menu" className="w-72">
+      <DropdownItem key="open-chat" description="Users can join rooms and chat freely.">
+        🗨️ Open Chat Rooms
+      </DropdownItem>
+      <DropdownItem key="public-rooms" description="Browse and explore public rooms.">
+        🌐 Explore Public Rooms
+      </DropdownItem>
+      <DropdownItem key="private-rooms" description="Create private rooms and share codes.">
+        🔐 Private Room with Code
+      </DropdownItem>
+      <DropdownItem key="coming-soon" className="text-gray-400 italic">
+        🚧 More features dropping soon...
+      </DropdownItem>
+    </DropdownMenu>
+  </Dropdown>
+</div>
 
     <NavbarItem>
       <HeroLink
@@ -153,7 +157,7 @@ function App() {
 </NavbarContent>
 
   {/* Mobile Menu */}
-  <NavbarMenu className="mt-16">
+  <NavbarMenu>
     <NavbarMenuItem>
       <p className="text-lg font-semibold text-gray-800 mb-2">Features</p>
     </NavbarMenuItem>

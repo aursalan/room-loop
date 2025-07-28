@@ -52,7 +52,7 @@ function RegistrationForm() {
           <Input
             label="Email"
             labelPlacement="outside"
-            placeholder="Enter email address"
+            placeholder="Enter your email address"
             type="email"
             id="email"
             value={email}
@@ -62,7 +62,7 @@ function RegistrationForm() {
           <Input
             label="Username"
             labelPlacement="outside"
-            placeholder="Enter username"
+            placeholder="Enter your username."
             type="text"
             id="username"
             value={username}
@@ -72,7 +72,7 @@ function RegistrationForm() {
           <Input
             label="Password"
             labelPlacement="outside"
-            placeholder=" "
+            placeholder="Enter your password."
             type="password"
             id="password"
             value={password}
