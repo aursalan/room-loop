@@ -1,7 +1,7 @@
 
 # Room Loop
 
-> Roomloop is a full-stack web application designed for spontaneous, low-friction group interactions. It allows users to instantly create or join `rooms` for purposes like quick study sessions, brainstorming, or casual hangouts, without the need for formal invitations or scheduling.
+> A full-stack web application designed for spontaneous, low-friction group interactions. It allows users to instantly create or join `rooms` for purposes like quick study sessions, brainstorming, or casual hangouts, without the need for formal invitations or scheduling.
 
 - Spontaneous Connections: Create or join public/private rooms for drop-in events and instant meetups.
 
@@ -106,6 +106,7 @@ npm run dev
 - **Interact:** Once inside, send messages in the real-time chat and see a live list of all participants.
 
 - **Leave a Room:** Click the `Leave Room` button to exit and return to your dashboard.
+
 ##  Future Improvements
 
 **Video & Audio Chat:** Integrate WebRTC for real-time video and audio communication.
@@ -117,6 +118,7 @@ npm run dev
 **Friend System & Invites:** Allow users to add friends and send direct invitations to rooms.
 
 **Advanced Search:** Add more powerful search and filtering options on the Explore page.
+
 ## Acknowledgements
 
  - [Node.js Documentation](https://nodejs.org/en/docs/)
