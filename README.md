@@ -53,8 +53,8 @@ CREATE DATABASE roomloop_db;
 
 - Make sure you are in the root of the project. Adjust the path as needed.
 ```
-psql -U your_postgres_user -d roomloop_db -f backend/database/init.sql
-#Note: This command assumes your script is located at backend/database/init.sql 
+psql -U your_postgres_user -d roomloop_db -f backend/database/roomloop-db
+#Note: This command assumes your script is located at backend/database/roomloop-db
 ```
 
 
