@@ -1,5 +1,4 @@
-
-# Room Loop
+# :infinity: Room Loop
 
 > A full-stack web application designed for spontaneous, low-friction group interactions. It allows users to instantly create or join rooms for purposes like quick study sessions, brainstorming, or casual hangouts, without the need for formal invitations or scheduling.
 
