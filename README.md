@@ -26,7 +26,7 @@
 
 **Frontend:** React.js, Vite\
 **Backend:** Node.js, Express.js, PostgreSQL, Socket.IO\
-**Prerequisites** Postman, pgAdmin, Git
+**Prerequisites:** Postman, pgAdmin, Git
 
 ## 2. How to Install and Run the Project
 
